@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<string name="app_name">CropWallpaper</string>
+<string name="all_images">all images</string>
+<string name="favorite">favorite</string>
+<string name="favorite_addremove">add/remove favorite</string>
+
+<string name="cancel">cancel</string>
+<string name="wallpaper_set">set as wallpaper</string>
+<string name="wallpaper_progress_title">CropWallpaper</string>
+<string name="wallpaper_progress_message">Please wait...</string>
+
+</resources>
