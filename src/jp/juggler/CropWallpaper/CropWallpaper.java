@@ -9,6 +9,7 @@ import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -22,6 +23,8 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
@@ -80,9 +83,20 @@ public final class CropWallpaper extends Activity {
 	WallpaperManager wpm;
 	Uri uri;
 	boolean bLoading;
+	DisplayMetrics metrics;
 	
 	void init_resource(){
-        setContentView(R.layout.crop_wallpaper_screen);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		
+		Configuration config = getResources().getConfiguration();
+
+		if( config.orientation == Configuration.ORIENTATION_LANDSCAPE){
+	        setContentView(R.layout.crop_wallpaper_landscape);
+		}else{
+	        setContentView(R.layout.crop_wallpaper_screen);
+		}
 
         // UI部品への参照を検索
     	flOuter =(FrameLayout)findViewById(R.id.flOuter);
@@ -92,7 +106,7 @@ public final class CropWallpaper extends Activity {
     	btnCancel =(Button)findViewById(R.id.btnCancel);
     	
     	// グリップ幅を計算
-        DisplayMetrics metrics = new DisplayMetrics();
+        metrics = new DisplayMetrics();
     	getWindowManager().getDefaultDisplay().getMetrics(metrics);
     	border_grip = metrics.density * 20;
 
@@ -101,9 +115,7 @@ public final class CropWallpaper extends Activity {
 
     	//
         wpm = WallpaperManager.getInstance(this);
-		wall_w = wpm.getDesiredMinimumWidth();
-		wall_h = wpm.getDesiredMinimumHeight();
-		wp_aspect = wall_w/(float)wall_h;
+
 
     	// 選択範囲の移動と拡大
     	ivSelection.setOnTouchListener(new OnTouchListener() {
@@ -226,6 +238,8 @@ public final class CropWallpaper extends Activity {
     	btnOk.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if(bLoading) return;
+				
 				// 既に作業中なら何もしない
 				if(dialog !=null || wp_task !=null ) return;
 				// 処理中ダイアログを表示
@@ -332,17 +346,88 @@ public final class CropWallpaper extends Activity {
 
 				log.d("loading image..");
 				try{
+					// 壁紙の要求サイズを調べる
+					wall_w = wpm.getDesiredMinimumWidth();
+					wall_h = wpm.getDesiredMinimumHeight();
+					wp_aspect = wall_w/(float)wall_h;
+
+					// ピクセルあたりのバイト数を調べるためにテスト画像をロードする
+					Bitmap test_image = BitmapFactory.decodeResource(getResources(),R.raw.test);
+					int pixel_bytes = test_image.getRowBytes() / test_image.getWidth();
+					log.d("pixel_bytes=%d",pixel_bytes);
+					test_image.recycle();
+
+					
+					BitmapFactory.Options check_option = new BitmapFactory.Options();
+					check_option.inJustDecodeBounds  = true;
+					check_option.inDensity = 0;
+					check_option.inTargetDensity =0;
+					check_option.inDensity = 0;
+					check_option.inScaled =false;
+					
+					BitmapFactory.Options load_option = new BitmapFactory.Options();
+					load_option.inPurgeable = true;
+					load_option.inDensity = 0;
+					load_option.inTargetDensity = 0;
+					load_option.inDensity = 0;
+					load_option.inScaled =false;
+
 					ContentResolver cr = getContentResolver();
-					InputStream is = cr.openInputStream(uri);
-					BitmapFactory.Options option = new BitmapFactory.Options();
-					option.inTargetDensity =0;
-					option.inDensity = 0;
-					option.inScaled =false;
-					src_image = BitmapFactory.decodeStream(is,null,option);
+					
+					////////////////////
+					
+					InputStream is;
+
+					// check size of image
+					is = cr.openInputStream(uri);
+					try{
+						check_option.outHeight =0;
+						check_option.outWidth =0;
+						BitmapFactory.decodeStream(is, null, check_option);
+					}finally{
+						is.close();
+					}
+					if( check_option.outWidth < 1 || check_option.outHeight < 1 ){
+						log.e("load failed.");
+						return;
+					}
+					 
+					// データ量を調べて必要ならサンプルサイズを変える
+					int data_size = check_option.outWidth * check_option.outHeight * pixel_bytes; // 面積とRGBA
+					int limit_size = 1024* 1024* 10;
+					int samplesize =1;
+					while( data_size /(float)(samplesize*samplesize) >= limit_size ){
+						samplesize++;
+					}
+					load_option.inSampleSize  = samplesize;
+
+					
+					// load bitmap
+					is = cr.openInputStream(uri);
+					try{
+						src_image = BitmapFactory.decodeStream(is, null, load_option);
+					}finally{
+						is.close();
+					}
+					
 					if( src_image == null ){
 						log.e("load failed.");
 						return;
 					}
+					int row_bytes = src_image.getRowBytes();
+					int pixel_bytes2 = row_bytes/src_image.getWidth();
+					log.d("original size=%dx%dx%d(%.2fMB), factor=%s,resized=%dx%dx%d(%.2fMB)"
+						,check_option.outWidth
+						,check_option.outHeight
+						,pixel_bytes
+						,data_size/(float)(1024*1024)
+						,samplesize
+						,src_image.getWidth()
+						,src_image.getHeight()
+						,pixel_bytes2
+						,(src_image.getHeight() * row_bytes )/(float)(1024*1024)
+					);
+					
 				}catch(Throwable ex){
 					ex.printStackTrace();
 					return;

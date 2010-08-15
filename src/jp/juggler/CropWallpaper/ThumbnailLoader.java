@@ -187,18 +187,31 @@ public class ThumbnailLoader {
 					continue;
 				}
 				
+				Bitmap src_image;
+				
 				// check size of image
+				check_option.outWidth = 0;
+				check_option.outHeight = 0;
 				BitmapFactory.decodeFile(target.datapath, check_option);
-				// ロード時に小さいイメージを読み込むようにする
-				int size = (check_option.outWidth > check_option.outHeight ? check_option.outWidth : check_option.outHeight);
-				int samplesize =1;
-				if( size >= thum_size * 2 ){
-					samplesize = size/(thum_size * 2);
+				if( check_option.outWidth < 1 || check_option.outHeight < 1 ){
+					// 画像サイズを取得できない
+					src_image = BitmapFactory.decodeResource(context.getResources(),R.raw.test);
+				}else{
+					// ロード時に小さいイメージを読み込むようにする
+					int data_size = check_option.outWidth * check_option.outHeight; // 面積とRGBA
+					int limit_size = thum_size * thum_size * 4;
+					int samplesize =1;
+					while( data_size /(float)(samplesize*samplesize) >= limit_size){
+						++samplesize;
+					}
+					// load bitmap
+					load_option.inSampleSize  = samplesize;
+					src_image = BitmapFactory.decodeFile(target.datapath, load_option);
+					if( src_image == null ){
+						src_image = BitmapFactory.decodeResource(context.getResources(),R.raw.test);
+					}
 				}
-				// load bitmap
-				load_option.inSampleSize  = samplesize;
-				Bitmap src_image = BitmapFactory.decodeFile(target.datapath, load_option);
-			
+				
 				// データのサイズ
 				int src_xsize = src_image.getWidth();
 				int src_ysize = src_image.getHeight();
@@ -228,9 +241,11 @@ public class ThumbnailLoader {
 				int image_left   = (outer_xsize - shown_xsize) /2;
 				int image_top    = (outer_ysize - shown_ysize) /2;
 				
+				Bitmap shown_image;
+				
 				try{
 					// リサイズされたBitmapを作成する
-					Bitmap shown_image = Bitmap.createBitmap(outer_xsize,outer_ysize,src_image.getConfig());
+					shown_image = Bitmap.createBitmap(outer_xsize,outer_ysize,src_image.getConfig());
 					Rect src_rect = new Rect(0,0,src_xsize,src_ysize);
 					RectF shown_image_rect = new RectF(
 						 image_left
@@ -243,21 +258,20 @@ public class ThumbnailLoader {
 					Paint paint = new Paint();
 					paint.setFilterBitmap(true);
 					c.drawBitmap(src_image,src_rect,shown_image_rect,paint);
-					// 元画像を破棄
-					src_image.recycle();
-					// ImageInfoを更新
-					synchronized(ThumbnailLoader.this){
-						target.drawable = new BitmapDrawable(shown_image);
-						bitmap_exists.add(new Integer(target_index));
-					}
 				}catch(Throwable ex){
 					ex.printStackTrace();
-					return;
+					shown_image = BitmapFactory.decodeResource(context.getResources(),R.raw.test);
 				}
+				
+				// 元画像を破棄
+				src_image.recycle();
 
+				// ImageInfoを更新
+				synchronized(ThumbnailLoader.this){
+					target.drawable = new BitmapDrawable(shown_image);
+					bitmap_exists.add(new Integer(target_index));
+				}
 			}
 		}
-		
 	}
-	
 }
