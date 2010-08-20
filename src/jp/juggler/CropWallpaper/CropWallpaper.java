@@ -9,6 +9,7 @@ import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,6 +21,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,9 +30,12 @@ import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ToggleButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
 public final class CropWallpaper extends Activity {
 	static LogCategory log = new LogCategory("CropWallpaper");
@@ -41,11 +46,14 @@ public final class CropWallpaper extends Activity {
 	ImageView ivSelection;
 	Button btnOk;
 	Button btnCancel;
+	ToggleButton tbOverall;
+	
 	Handler ui_handler;
 
 	// 壁紙の出力サイズ
 	int wall_w;
 	int wall_h;
+	int wall_h_real;
 	float wp_aspect;
 
 	// 入力画像
@@ -84,9 +92,11 @@ public final class CropWallpaper extends Activity {
 	Uri uri;
 	boolean bLoading;
 	DisplayMetrics metrics;
+	boolean bOverall;
+	int statusBarHeight;
 	
 	void init_resource(){
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    	getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		
@@ -104,11 +114,13 @@ public final class CropWallpaper extends Activity {
     	ivSelection =(ImageView)findViewById(R.id.ivSelection);
     	btnOk =(Button)findViewById(R.id.btnSetWallPaper);
     	btnCancel =(Button)findViewById(R.id.btnCancel);
-    	
+    	tbOverall =(ToggleButton)findViewById(R.id.btnOverall);
+
     	// グリップ幅を計算
         metrics = new DisplayMetrics();
     	getWindowManager().getDefaultDisplay().getMetrics(metrics);
     	border_grip = metrics.density * 20;
+
 
     	//
     	ui_handler = new Handler();
@@ -116,6 +128,23 @@ public final class CropWallpaper extends Activity {
     	//
         wpm = WallpaperManager.getInstance(this);
 
+        
+        tbOverall.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				bOverall = isChecked;
+				if( isChecked ){
+					setSelection(0,0,0,0);
+				}else{
+					setSelection(
+						 prev_selection.left
+						,prev_selection.top 
+						,prev_selection.width()
+						,prev_selection.height()
+					);
+				}
+			}
+		});
 
     	// 選択範囲の移動と拡大
     	ivSelection.setOnTouchListener(new OnTouchListener() {
@@ -124,6 +153,8 @@ public final class CropWallpaper extends Activity {
 				try{
 					// 初期化がまだなら処理しない
 					if(bLoading) return false;
+					// 全体モードなら処理しない
+					if(bOverall) return false;
 
 					float x = event.getX();
 					float y = event.getY();
@@ -261,6 +292,9 @@ public final class CropWallpaper extends Activity {
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
+
+
+    	MyApp.pref_init(this);
         super.onCreate(savedInstanceState);
         init_resource();
         init_page(getIntent());
@@ -302,6 +336,10 @@ public final class CropWallpaper extends Activity {
 	
 	// ページ構成パラメータの解釈
 	void init_page(Intent intent){
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this);
+		bAvoidStatusBar = pref.getBoolean("avoid_status_bar", false);
+		statusBarHeight = pref.getInt("status_bar_height", 0);
+
 		bLoading = true;
 		src_image = null;
 		uri = intent.getData();
@@ -327,6 +365,8 @@ public final class CropWallpaper extends Activity {
 		log.d("uri=%s",uri);
 	}
 
+	boolean bAvoidStatusBar = true;
+
 	// 画像ロードタスク
 	ImageLoaderWorker loader_worker;
 	class ImageLoaderWorker extends WorkerBase{
@@ -346,11 +386,19 @@ public final class CropWallpaper extends Activity {
 
 				log.d("loading image..");
 				try{
-					// 壁紙の要求サイズを調べる
-					wall_w = wpm.getDesiredMinimumWidth();
-					wall_h = wpm.getDesiredMinimumHeight();
-					wp_aspect = wall_w/(float)wall_h;
 
+			    	// 壁紙の要求サイズを調べる
+					wall_w = wpm.getDesiredMinimumWidth();
+					wall_h = wall_h_real = wpm.getDesiredMinimumHeight();
+					
+					if( bAvoidStatusBar){
+						wall_h -= statusBarHeight;
+					}
+			    	log.d("statusBarHeight=%d,wall=%d,%d",statusBarHeight,wall_h,wall_h_real);
+
+			    	wp_aspect = wall_w/(float)wall_h;
+
+			    	
 					// ピクセルあたりのバイト数を調べるためにテスト画像をロードする
 					Bitmap test_image = BitmapFactory.decodeResource(getResources(),R.raw.test);
 					int pixel_bytes = test_image.getRowBytes() / test_image.getWidth();
@@ -394,7 +442,10 @@ public final class CropWallpaper extends Activity {
 					 
 					// データ量を調べて必要ならサンプルサイズを変える
 					int data_size = check_option.outWidth * check_option.outHeight * pixel_bytes; // 面積とRGBA
-					int limit_size = 1024* 1024* 10;
+					String pref_val = PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this).getString("image_ram_limit", null);
+					int pref_n = MyApp.parseInt(pref_val,10,5,100);
+					
+					int limit_size = 1024* 1024* pref_n;
 					int samplesize =1;
 					while( data_size /(float)(samplesize*samplesize) >= limit_size ){
 						samplesize++;
@@ -529,27 +580,33 @@ public final class CropWallpaper extends Activity {
 	}
 
 	void setSelection(int new_x,int new_y,int new_w,int new_h){
-		// 表示枠のサイズ
-		int frame_w = flOuter.getWidth();
-		int frame_h = flOuter.getHeight();
-		// 幅と高さをクリップ
-		new_w =  new_w > frame_w ? frame_w : new_w < 0 ? 0 : new_w;
-		new_h =  new_h > frame_h ? frame_h : new_h < 0 ? 0 : new_h;
-		// 移動可能範囲
-		int x_min = (int)shown_image_rect.left;
-		int y_min = (int)shown_image_rect.top;
-		int x_max = (int)shown_image_rect.right  - new_w;
-		int y_max = (int)shown_image_rect.bottom - new_h;
-		// 位置を移動可能範囲でクリップ
-		new_x = new_x < x_min ? x_min : new_x > x_max ? x_max : new_x;
-		new_y = new_y < y_min ? y_min : new_y > y_max ? y_max : new_y;
+		if( !bOverall ){
+			// 幅と高さをクリップ
+			int max_w = (int)shown_image_rect.width();
+			int max_h = (int)shown_image_rect.height();
+			new_w =  new_w > max_w ? max_w : new_w < 0 ? 0 : new_w;
+			new_h =  new_h > max_h ? max_h : new_h < 0 ? 0 : new_h;
+			// 移動可能範囲
+			int x_min = (int)shown_image_rect.left;
+			int y_min = (int)shown_image_rect.top;
+			int x_max = (int)shown_image_rect.right  - new_w;
+			int y_max = (int)shown_image_rect.bottom - new_h;
+			// 位置を移動可能範囲でクリップ
+			new_x = new_x < x_min ? x_min : new_x > x_max ? x_max : new_x;
+			new_y = new_y < y_min ? y_min : new_y > y_max ? y_max : new_y;
+		}else{
+			new_w = (int)shown_image_rect.width();
+			new_h = (int)shown_image_rect.height();
+			new_x = (int)shown_image_rect.left;
+			new_y = (int)shown_image_rect.top;
+		}
 		// 選択範囲を更新
 		LinearLayout.LayoutParams lpSelection = (LinearLayout.LayoutParams) ivSelection.getLayoutParams();
 		lpSelection.setMargins(
 			 new_x
 			,new_y
-			,frame_w -new_w -new_x
-			,frame_h -new_h -new_y
+			,flOuter.getWidth() -new_w -new_x
+			,flOuter.getHeight() -new_h -new_y
 		);
 		ivSelection.requestLayout();
 	}
@@ -563,26 +620,53 @@ public final class CropWallpaper extends Activity {
 		}
 		public void run(){
 			try{
-				// 表示枠基準での選択範囲を、表示画像基準の選択範囲に変換
-				double ratio_x = src_image.getWidth ()/(double)shown_image_rect.width ();
-				double ratio_y = src_image.getHeight()/(double)shown_image_rect.height();
-				LinearLayout.LayoutParams lpSelection = (LinearLayout.LayoutParams) ivSelection.getLayoutParams();
-				int x = lpSelection.leftMargin - (int)shown_image_rect.left;
-				int y = lpSelection.topMargin  - (int)shown_image_rect.top;
-				Rect selection = new Rect(
-						 (int)(0.5 + ratio_x * x)
-						,(int)(0.5 + ratio_y * y)
-						,(int)(0.5 + ratio_x * (x + ivSelection.getWidth()))
-						,(int)(0.5 + ratio_y * (y + ivSelection.getHeight()))
-				);
-				// 入力画像をリサイズ
-				Bitmap wall_image = Bitmap.createBitmap(wall_w,wall_h,src_image.getConfig());
-				RectF wall_rect = new RectF(0,0,wall_w,wall_h);
+				Bitmap wall_image = Bitmap.createBitmap(wall_w,wall_h_real,src_image.getConfig());
 				Canvas c = new Canvas(wall_image);
 				c.drawARGB(255,0,0,0);
 				Paint paint = new Paint();
 				paint.setFilterBitmap(true);
-				c.drawBitmap(src_image,selection,wall_rect,paint);
+				if( bOverall ){
+					float x_ratio = src_image.getWidth() / (float)wall_w;
+					float y_ratio = src_image.getHeight() / (float)wall_h;
+					int w,h;
+					if( x_ratio >= y_ratio ){
+						h = (int)( 0.5f +  wall_w * src_image.getHeight() / (float)src_image.getWidth());
+						w = wall_w;
+					}else{
+						w = (int)( 0.5f +  wall_h * src_image.getWidth() / (float)src_image.getHeight());
+						h = wall_h;
+					}
+					int x = (wall_w - w)/2;
+					int y = (wall_h - h)/2;
+					// 入力画像をリサイズ
+					Rect selection = new Rect(0,0,src_image.getWidth(),src_image.getHeight());
+					RectF wall_rect = new RectF(x,y,x+w,y+h);
+					if(bAvoidStatusBar){
+						wall_rect.top += statusBarHeight;
+						wall_rect.bottom += statusBarHeight;
+					}
+					c.drawBitmap(src_image,selection,wall_rect,paint);
+				}else{
+					// 表示枠基準での選択範囲を、表示画像基準の選択範囲に変換
+					double ratio_x = src_image.getWidth ()/(double)shown_image_rect.width ();
+					double ratio_y = src_image.getHeight()/(double)shown_image_rect.height();
+					LinearLayout.LayoutParams lpSelection = (LinearLayout.LayoutParams) ivSelection.getLayoutParams();
+					int x = lpSelection.leftMargin - (int)shown_image_rect.left;
+					int y = lpSelection.topMargin  - (int)shown_image_rect.top;
+					Rect selection = new Rect(
+							 (int)(0.5 + ratio_x * x)
+							,(int)(0.5 + ratio_y * y)
+							,(int)(0.5 + ratio_x * (x + ivSelection.getWidth()))
+							,(int)(0.5 + ratio_y * (y + ivSelection.getHeight()))
+					);
+					// 入力画像をリサイズ
+					RectF wall_rect = new RectF(0,0,wall_w,wall_h);
+					if(bAvoidStatusBar){
+						wall_rect.top += statusBarHeight;
+						wall_rect.bottom += statusBarHeight;
+					}
+					c.drawBitmap(src_image,selection,wall_rect,paint);
+				}
 				// 
 				src_image.recycle();
 				log.d("set wallpaper:%d,%d,%s",wall_image.getWidth(),wall_image.getHeight(),wall_image.getConfig());

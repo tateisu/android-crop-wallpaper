@@ -17,3 +17,23 @@ Many image chooser raises error at showing a folder that contains many image. My
 * keyword
 crop,wallpaper,cropwallpaper,utility,tool
 
+--------------------------------
+
+* 1.11 の目標
+** VIEW,SEND,DELETE,EDIT
+それぞれIntentのActionを変えて呼び出す
+Delete は確認ダイアログをつける
+
+** OuterRect モード
+画像を全て囲むモードを用意する。
+
+** 設定画面
+- 大きい画像を扱う際のメモリ消費許容量
+- サムネイル一覧の先読み量
+- サムネイル画面でシングルタップした際のアクション
+
+** バグ修正
+- フォルダ一覧の並び順
+- フォルダ一覧で、個数の表記がスクロールバーに隠れないようパディングを調整する
+- フォルダ一覧で、スクロールバーにノブをつける
+

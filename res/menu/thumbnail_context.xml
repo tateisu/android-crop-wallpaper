@@ -7,4 +7,20 @@
     	android:id="@+id/favorite"
         android:title="@string/favorite_addremove"
     />
+    <item
+    	android:id="@+id/view"
+        android:title="@string/view"
+    />
+    <item
+    	android:id="@+id/send"
+        android:title="@string/send"
+    />
+    <item
+    	android:id="@+id/edit"
+        android:title="@string/edit"
+    />
+    <item
+    	android:id="@+id/delete"
+        android:title="@string/delete"
+    />
 </menu>

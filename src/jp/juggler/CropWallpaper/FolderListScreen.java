@@ -15,6 +15,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -59,6 +62,24 @@ public class FolderListScreen extends Activity {
 		db.close();
 	}
 
+	////////////////////////////////////////////
+	
+	@Override public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.option_menu, menu);
+	    return true;
+	}
+	@Override public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    case R.id.menuPref:
+			startActivity(new Intent(this,MyPrefScreen.class));
+			return true;
+	    }
+	}
+	
+	////////////////////////////////////////////
     void init_page(Intent intent){
     	ArrayList<DirInfo> list = new ArrayList<DirInfo>();
         try{

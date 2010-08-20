@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+
+    <string-array name="singletap_action_names">
+        <item>view</item>
+        <item>send</item>
+        <item>edit</item>
+    </string-array>
+
+    <string-array name="singletap_action_values">
+        <item>android.intent.action.VIEW</item>
+        <item>android.intent.action.SEND</item>
+        <item>android.intent.action.EDIT</item>
+    </string-array>
+</resources>

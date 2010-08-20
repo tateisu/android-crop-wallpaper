@@ -5,10 +5,40 @@
 <string name="all_images">すべての画像</string>
 <string name="favorite">お気に入り</string>
 <string name="favorite_addremove">お気に入りの登録/解除</string>
+<string name="view">閲覧</string>
+<string name="send">送る(共有)</string>
+<string name="edit">編集</string>
+<string name="delete">削除</string>
+<string name="pref">設定…</string>
+
+<string name="no_activity">処理できるアプリがありません</string>
+<string name="overall">全体</string>
+
+<string name="delete_warning_title">削除の確認</string>
+<string name="delete_warning">%sを削除します!!\nよろしいですか？</string>
+
 
 <string name="cancel">キャンセル</string>
 <string name="wallpaper_set">壁紙に設定</string>
 <string name="wallpaper_progress_title">壁紙の設定中</string>
 <string name="wallpaper_progress_message">しばらくお待ちください…</string>
+
+
+<string name="pref_title">設定</string>
+<string name="image_ram_limit_title">画像サイズの限界(MB)</string>
+<string name="image_ram_limit_desc">展開後の画像サイズが%dMBより大きい画像はロード時に縮小します。大きすぎるとメモリ不足で落ちます。</string>
+<string name="image_ram_limit_error">5..100の間の整数を入力してください</string>
+
+<string name="thumbnail_fetch_count_title">サムネイルの先読み数</string>
+<string name="thumbnail_fetch_count_desc">表示範囲に近い位置のサムネイルを%d個まで先読みします。大きすぎるとメモリ不足で落ちます。</string>
+<string name="thumbnail_fetch_count_error">15..999の間の整数を入力してください</string>
+
+<string name="thumbnail_singletap_action_title">シングルタップ時の動作</string>
+<string name="thumbnail_singletap_action_desc">サムネイルを短押ししたら「%s」を行ないます。</string>
+
+<string name="avoid_status_bar_title">ステータスバーを避ける</string>
+<string name="avoid_status_bar_desc_off">ステータスバーの後ろにも画像が配置されます。半透明ステータスバー向けの設定です。</string>
+<string name="avoid_status_bar_desc_on">画像がステータスバーに隠れないよう、ステータスバーの部分が黒くなった壁紙を作成します。</string>
+
 
 </resources>

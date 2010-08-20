@@ -1,26 +1,33 @@
 package jp.juggler.CropWallpaper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
 import jp.juggler.util.LogCategory;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 
@@ -30,6 +37,7 @@ public class ImageListScreen extends Activity {
 	GridView lvThumbnailView;
 	ThumbnailLoader loader;
 	SQLiteDatabase db;
+	ImageListAdapter adapter;
 
 	int thum_size;
 	
@@ -44,38 +52,27 @@ public class ImageListScreen extends Activity {
         
         loader = new ThumbnailLoader(this,thum_size);
         
+		// make grid view 
+        adapter = new ImageListAdapter(this,loader,new ArrayList<ImageInfo>(),thum_size,thum_size);
+		lvThumbnailView.setAdapter(adapter);
+        
         lvThumbnailView.setOnItemClickListener(new OnItemClickListener() {
-
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
-				Intent intent = new Intent();
-
-				ImageListAdapter adapter = (ImageListAdapter)parent.getAdapter();
-				ImageInfo info = adapter.getItem(pos);
-				Uri base_uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-				Uri item_uri = ContentUris.withAppendedId(base_uri, info.id);
-				intent.setAction(Intent.ACTION_SEND);
-				intent.putExtra(Intent.EXTRA_STREAM, item_uri);
-
-				Cursor cur = managedQuery(item_uri,null, null, null, null);
-				if (cur.moveToFirst()) {
-					int col_mimetype = cur.getColumnIndex( MediaStore.Images.ImageColumns.MIME_TYPE);
-					intent.setDataAndType(item_uri,cur.getString(col_mimetype));
-					
-				}
-				cur.close();
-				adapter.notifyDataSetChanged();
-				startActivity(intent);
+				String pref_val = PreferenceManager.getDefaultSharedPreferences(ImageListScreen.this).getString("thumbnail_singletap_action",Intent.ACTION_VIEW);
+				startChild(pos,pref_val);
 			}
-        	
 		});
 
 
         registerForContextMenu(lvThumbnailView);
 	}
 	
+	////////////////////////////////////////////////////////////////////////////
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		MyApp.pref_init(this);
 		super.onCreate(savedInstanceState);
 		initUI();
         
@@ -110,47 +107,134 @@ public class ImageListScreen extends Activity {
 		inflater.inflate(R.menu.thumbnail_context, menu);
 	}
 	
+	static final int dialog_delete_warning =1;
+	ImageInfo last_selected_item;
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo menu_info = (AdapterContextMenuInfo) item.getMenuInfo();
+		int pos = menu_info.position;
+		if(pos < 0 ) return super.onContextItemSelected(item);
+		
 		switch(item.getItemId()){
 		default:
 			return super.onContextItemSelected(item);
 		case R.id.favorite:
 			{
-				AdapterContextMenuInfo menu_info = (AdapterContextMenuInfo) item.getMenuInfo();
-				int pos = menu_info.position;
-				if( pos != -1 ){
-					ImageListAdapter adapter = (ImageListAdapter)lvThumbnailView.getAdapter();
-					ImageInfo info = adapter.getItem(pos);
-					// toggle value
-					boolean bFavorited = info.favorited = !info.favorited;
-					// update db
-					if(bFavorited){
-						try{
-							db.execSQL("insert into favorites(_id)values(?)",new Object[]{info.id});
-						}catch(Throwable ex){
-							ex.printStackTrace();
-						}
-					}else{
-						try{
-							db.execSQL("delete from favorites where _id=?",new Object[]{info.id});
-						}catch(Throwable ex){
-							ex.printStackTrace();
-						}
+				ImageInfo info = adapter.getItem(pos);
+				// toggle value
+				boolean bFavorited = info.favorited = !info.favorited;
+				// update db
+				if(bFavorited){
+					try{
+						db.execSQL("insert into favorites(_id)values(?)",new Object[]{info.id});
+					}catch(Throwable ex){
+						ex.printStackTrace();
 					}
-					// update view
-					adapter.notifyDataSetChanged();
+				}else{
+					try{
+						db.execSQL("delete from favorites where _id=?",new Object[]{info.id});
+					}catch(Throwable ex){
+						ex.printStackTrace();
+					}
 				}
+				// update view
+				adapter.notifyDataSetChanged();
 			}
 			return true;
+		case R.id.view:
+			startChild(pos,Intent.ACTION_VIEW);
+			return true;
+		case R.id.send:
+			startChild(pos,Intent.ACTION_SEND);
+			return true;
+		case R.id.edit:
+			startChild(pos,Intent.ACTION_EDIT);
+			return true;
+		case R.id.delete:
+			last_selected_item = adapter.getItem(pos);
+			showDialog(dialog_delete_warning);
+			return true;
+		
 		}
 	}
 
-
+	@Override
+	protected Dialog onCreateDialog(int id) {
+	    switch(id) {
+	    default:
+	    	return null;
+	    case dialog_delete_warning:
+			{
+				log.d("create dialog ..");
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle(R.string.delete_warning_title);
+				builder.setMessage("Are you sure you want to exit?")
+				       .setCancelable(true)
+				       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				           public void onClick(DialogInterface dialog, int id) {
+				                dialog.dismiss();
+				                delete_last_item();
+				           }
+				       })
+				       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+				           public void onClick(DialogInterface dialog, int id) {
+				                dialog.cancel();
+				           }
+				       });
+				AlertDialog alert = builder.create();
+				return alert;
+			}
+	    }
+	}
+	
+	@Override protected void onPrepareDialog(int id, Dialog dialog) {
+		switch(id){
+		default:
+			super.onPrepareDialog(id, dialog);
+			break;
+		case dialog_delete_warning:
+			AlertDialog ad = (AlertDialog)dialog;
+			ad.setMessage(String.format(getResources().getString(R.string.delete_warning),last_selected_item.name));
+			break;
+		}
+	}
+	
+	
+	void delete_last_item(){
+		log.d("delete_last_item..");
+		try{
+			Uri base_uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+			Uri item_uri = ContentUris.withAppendedId(base_uri, last_selected_item.id);
+			ContentResolver cr = getContentResolver();
+			cr.delete(item_uri,null,null);
+			adapter.remove(last_selected_item);
+		}catch(Throwable ex){
+			ex.printStackTrace();
+			Toast toast = Toast.makeText(this,ex.getMessage(),Toast.LENGTH_SHORT);
+			toast.show();
+		}
+	}
 
 	////////////////////////////////////////////
+	
+	@Override public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.option_menu, menu);
+	    return true;
+	}
+	@Override public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    case R.id.menuPref:
+			startActivity(new Intent(this,MyPrefScreen.class));
+			return true;
+	    }
+	}
+	
+	////////////////////////////////////////////
 	void init_page_args(Intent intent){
-		ArrayList<ImageInfo> list = new ArrayList<ImageInfo>();
 
 		String dirname = intent.getStringExtra("dirname");
 		if( dirname != null ){
@@ -234,7 +318,7 @@ public class ImageListScreen extends Activity {
 	        		info.datapath = path;
 	        		info.name = cur.getString(idx_name);
 	        		info.showState = 0;
-	        		list.add(info);
+	        		adapter.add(info);
 	        		map.put(info.id,info);
 	        	}while(cur.moveToNext());
 	        	
@@ -279,21 +363,45 @@ public class ImageListScreen extends Activity {
 		        		info.datapath = path;
 		        		info.name = cur.getString(idx_name);
 		        		info.favorited = true;
-		        		list.add(info);
+		        		adapter.add(info);
 					}
 				    cur.close();
 				}while(cur1.moveToNext());
 			}
 			cur1.close();
 			// sort
-			Collections.sort(list,new Comparator<ImageInfo>(){
+			adapter.sort(new Comparator<ImageInfo>(){
 				@Override
 				public int compare(ImageInfo a, ImageInfo b) {
 					return a.datapath.compareTo(b.datapath);
 				}
 			});
 		}
-		// make grid view 
-		lvThumbnailView.setAdapter(new ImageListAdapter(this,loader,list,thum_size,thum_size));
 	}
+	
+	void startChild(int pos ,String action){
+		if(pos<0) return;
+		ImageInfo info = adapter.getItem(pos);
+		
+		Intent intent = new Intent();
+		Uri base_uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+		Uri item_uri = ContentUris.withAppendedId(base_uri, info.id);
+		intent.setAction(action);
+		intent.putExtra(Intent.EXTRA_STREAM, item_uri);
+	
+		Cursor cur = managedQuery(item_uri,null, null, null, null);
+		if( cur.moveToFirst() ){
+			int col_mimetype = cur.getColumnIndex( MediaStore.Images.ImageColumns.MIME_TYPE);
+			intent.setDataAndType(item_uri,cur.getString(col_mimetype));
+		}
+		cur.close();
+		try{
+			startActivity(intent);
+			adapter.notifyDataSetChanged();
+		}catch(ActivityNotFoundException ex ){
+			Toast toast = Toast.makeText(this,getText(R.string.no_activity),Toast.LENGTH_SHORT);
+			toast.show();
+		}
+	}
+
 }

@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.widget.ImageView;
 import jp.juggler.util.LogCategory;
 import jp.juggler.util.WorkerBase;
@@ -90,8 +91,11 @@ public class ThumbnailLoader {
 			bCancelled = true;
 			notifyEx();
 		}
-		static final int load_range = 30; 
+		int load_range = 30; 
 		public void run(){
+			String pref_val = PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_fetch_count", null);
+			load_range = MyApp.parseInt(pref_val,30,15,9999);
+			
 			BitmapFactory.Options load_option = new BitmapFactory.Options();
 			load_option.inPurgeable = true;
 			load_option.inDensity = 0;

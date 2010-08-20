@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory android:title="@string/pref_title">
+		<EditTextPreference
+			android:key="image_ram_limit"
+			android:title="@string/image_ram_limit_title"
+			android:summary="@string/image_ram_limit_desc"
+			android:dialogTitle="@string/image_ram_limit_title"
+		/>
+
+		<EditTextPreference
+			android:key="thumbnail_fetch_count"
+			android:title="@string/thumbnail_fetch_count_title"
+			android:summary="@string/thumbnail_fetch_count_desc"
+			android:dialogTitle="@string/thumbnail_fetch_count_title"
+		/>
+	
+		<ListPreference
+			android:key="thumbnail_singletap_action"
+			android:title="@string/thumbnail_singletap_action_title"
+			android:summary="@string/thumbnail_singletap_action_desc"
+			android:dialogTitle="@string/thumbnail_singletap_action_title"
+			android:entries="@array/singletap_action_names"
+			android:entryValues="@array/singletap_action_values"
+		/>
+		<CheckBoxPreference
+			android:key="avoid_status_bar"
+			android:title="@string/avoid_status_bar_title"
+			android:summaryOff="@string/avoid_status_bar_desc_off"
+			android:summaryOn="@string/avoid_status_bar_desc_on"
+		/>
+	</PreferenceCategory>
+</PreferenceScreen>
