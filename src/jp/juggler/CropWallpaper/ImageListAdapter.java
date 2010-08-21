@@ -32,6 +32,9 @@ public class ImageListAdapter extends ArrayAdapter<ImageInfo> {
 	@Override
 	public View getView(int idx, View view, ViewGroup parent) {
 		ImageView iv;
+
+		GridView gv = (GridView)parent;
+		int n = gv.getLastVisiblePosition() - gv.getFirstVisiblePosition(); 
 		
 		if(view == null){
 			log.d("create view %d",idx);
@@ -42,7 +45,7 @@ public class ImageListAdapter extends ArrayAdapter<ImageInfo> {
 			iv = (ImageView)view.findViewById(R.id.image);
 		}
 
-		ImageInfo info = loader.update_view(iv,idx);
+		ImageInfo info = loader.update_view(iv,idx,n);
 		updateCaption(view,info);
 		return view;
 	}

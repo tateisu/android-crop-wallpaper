@@ -139,7 +139,7 @@ public class FolderListScreen extends Activity {
 				@Override public int compare(DirInfo a, DirInfo b) {
 					if(a.bFavorites) return -1;
 					if(b.bFavorites) return 1;
-					return a.name.compareTo(b.name);
+					return a.name.compareToIgnoreCase(b.name);
 				}
 	        });
 	    }catch(Throwable ex){

@@ -14,7 +14,7 @@ public class MyApp extends android.app.Application{
 			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 			Editor edit = pref.edit();
 			if( ! pref.contains("image_ram_limit") ) edit.putString("image_ram_limit","10");
-			if( ! pref.contains("thumbnail_fetch_count") ) edit.putString("thumbnail_fetch_count","30");
+			if( ! pref.contains("thumbnail_fetch_count") ) edit.putString("thumbnail_fetch_count","23");
 			if( ! pref.contains("thumbnail_singletap_action") ) edit.putString("thumbnail_singletap_action",Intent.ACTION_VIEW);
 			edit.commit();
 		}catch(Throwable ex){

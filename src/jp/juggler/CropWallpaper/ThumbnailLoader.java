@@ -48,11 +48,15 @@ public class ThumbnailLoader {
 			ImageInfo info = adapter.getItem(i);
 			info.drawable = null;
 		}
+		log.d("visible_size=%d",visible_size);
 	}
+	
+	int visible_size=1;
 
-
-	ImageInfo update_view(ImageView view,int new_idx){
+	ImageInfo update_view(ImageView view,int new_idx,int visible_size){
 		synchronized(this){
+			if( this.visible_size < visible_size) this.visible_size = visible_size;
+			
 			// 古い情報の破棄
 			ImageInfo old_info = (ImageInfo)view.getTag();
 			if( old_info != null ){
@@ -91,10 +95,10 @@ public class ThumbnailLoader {
 			bCancelled = true;
 			notifyEx();
 		}
-		int load_range = 30; 
+		int load_pref = 30; 
 		public void run(){
 			String pref_val = PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_fetch_count", null);
-			load_range = MyApp.parseInt(pref_val,30,15,9999);
+			load_pref = MyApp.parseInt(pref_val,30,15,9999);
 			
 			BitmapFactory.Options load_option = new BitmapFactory.Options();
 			load_option.inPurgeable = true;
@@ -127,6 +131,7 @@ public class ThumbnailLoader {
 						});
 					}
 					
+					int load_range = load_pref + visible_size;
 					// 周辺にない要素があれば破棄する
 					ArrayList<Integer> clear_list = new ArrayList<Integer>();
 					for(Integer idx : bitmap_exists ){
