@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -96,6 +97,9 @@ public final class CropWallpaper extends Activity {
 	int statusBarHeight;
 	
 	void init_resource(){
+		if( PreferenceManager.getDefaultSharedPreferences(this).getBoolean("fullcolor",false) ){
+			getWindow().setFormat(PixelFormat.RGBA_8888);
+		}
     	getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -128,7 +132,8 @@ public final class CropWallpaper extends Activity {
     	//
         wpm = WallpaperManager.getInstance(this);
 
-        
+        btnOk.setEnabled(false);
+        tbOverall.setEnabled(false);
         tbOverall.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -292,7 +297,7 @@ public final class CropWallpaper extends Activity {
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
-
+		log.d("onCreate");
 
     	MyApp.pref_init(this);
         super.onCreate(savedInstanceState);
@@ -302,19 +307,21 @@ public final class CropWallpaper extends Activity {
 
 	@Override
 	protected void onDestroy() {
+		log.d("onDestroy");
 		super.onDestroy();
 		if(src_image !=null) src_image.recycle();
 	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
-		// TODO Auto-generated method stub
+		log.d("onNewIntent");
 		super.onNewIntent(intent);
 		init_page(intent);
 	}
 
 	@Override
 	protected void onResume() {
+		log.d("onResume");
 		super.onResume();
 		tracking_mode = TRACK_NONE;
 		if(bLoading){
@@ -325,12 +332,19 @@ public final class CropWallpaper extends Activity {
 
 	@Override
 	protected void onPause() {
+		log.d("onPause");
 		super.onPause();
 		if( wp_task != null ) wp_task.joinLoop(log,"wp_task");
 		if( dialog != null ) dialog.dismiss();
 		if( loader_worker != null ) loader_worker.joinLoop(log,"loader_worker");
 	}
 
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+    	log.d("onConfigurationChanged");
+		super.onConfigurationChanged(newConfig);
+	}
+	
 	/////////////////////////////////////////////////////////////
 	// 内部処理
 	
@@ -394,18 +408,10 @@ public final class CropWallpaper extends Activity {
 					if( bAvoidStatusBar){
 						wall_h -= statusBarHeight;
 					}
-			    	log.d("statusBarHeight=%d,wall=%d,%d",statusBarHeight,wall_h,wall_h_real);
+			    	log.d("statusBarHeight=%d,wall_h=%d(%d)",statusBarHeight,wall_h,wall_h_real);
 
 			    	wp_aspect = wall_w/(float)wall_h;
 
-			    	
-					// ピクセルあたりのバイト数を調べるためにテスト画像をロードする
-					Bitmap test_image = BitmapFactory.decodeResource(getResources(),R.raw.test);
-					int pixel_bytes = test_image.getRowBytes() / test_image.getWidth();
-					log.d("pixel_bytes=%d",pixel_bytes);
-					test_image.recycle();
-
-					
 					BitmapFactory.Options check_option = new BitmapFactory.Options();
 					check_option.inJustDecodeBounds  = true;
 					check_option.inDensity = 0;
@@ -419,6 +425,17 @@ public final class CropWallpaper extends Activity {
 					load_option.inTargetDensity = 0;
 					load_option.inDensity = 0;
 					load_option.inScaled =false;
+					
+					int pixel_bytes;
+					if( PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this).getBoolean("fullcolor", false) ){
+						check_option.inPreferredConfig =  Bitmap.Config.ARGB_8888;
+						load_option.inPreferredConfig =  Bitmap.Config.ARGB_8888;
+						pixel_bytes = 4;
+					}else{
+						pixel_bytes = 2;
+						check_option.inPreferredConfig =  Bitmap.Config.RGB_565;
+						load_option.inPreferredConfig =  Bitmap.Config.RGB_565;
+					}
 
 					ContentResolver cr = getContentResolver();
 					
@@ -558,6 +575,11 @@ public final class CropWallpaper extends Activity {
 							// 画像を表示
 							ivImage.setImageDrawable(new BitmapDrawable(getResources(),shown_image));
 
+							// ボタンを有効化
+					        tbOverall.setEnabled(true);
+					        btnOk.setEnabled(true);
+							bLoading =false;
+
 							// 選択範囲を設定
 							setSelection(
 								 prev_selection.left
@@ -565,7 +587,7 @@ public final class CropWallpaper extends Activity {
 								,prev_selection.width()
 								,prev_selection.height()
 							);
-							bLoading =false;
+							
 						}catch(Throwable ex){
 							ex.printStackTrace();
 							finish();
@@ -580,6 +602,7 @@ public final class CropWallpaper extends Activity {
 	}
 
 	void setSelection(int new_x,int new_y,int new_w,int new_h){
+		if(bLoading) return;
 		if( !bOverall ){
 			// 幅と高さをクリップ
 			int max_w = (int)shown_image_rect.width();
@@ -620,11 +643,14 @@ public final class CropWallpaper extends Activity {
 		}
 		public void run(){
 			try{
-				Bitmap wall_image = Bitmap.createBitmap(wall_w,wall_h_real,src_image.getConfig());
+				boolean bDither = PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this).getBoolean("dither",false);
+				
+				Bitmap wall_image = Bitmap.createBitmap(wall_w,wall_h_real,bDither ? Bitmap.Config.RGB_565 : src_image.getConfig());
 				Canvas c = new Canvas(wall_image);
 				c.drawARGB(255,0,0,0);
 				Paint paint = new Paint();
 				paint.setFilterBitmap(true);
+				paint.setDither(bDither);
 				if( bOverall ){
 					float x_ratio = src_image.getWidth() / (float)wall_w;
 					float y_ratio = src_image.getHeight() / (float)wall_h;

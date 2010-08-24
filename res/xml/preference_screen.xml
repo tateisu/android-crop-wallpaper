@@ -30,5 +30,17 @@
 			android:summaryOff="@string/avoid_status_bar_desc_off"
 			android:summaryOn="@string/avoid_status_bar_desc_on"
 		/>
+		<CheckBoxPreference
+			android:key="fullcolor"
+			android:title="@string/fullcolor_title"
+			android:summaryOff="@string/fullcolor_desc_off"
+			android:summaryOn="@string/fullcolor_desc_on"
+		/>
+		<CheckBoxPreference
+			android:key="dither"
+			android:title="@string/dither_title"
+			android:summaryOff="@string/dither_desc_off"
+			android:summaryOn="@string/dither_desc_on"
+		/>
 	</PreferenceCategory>
 </PreferenceScreen>

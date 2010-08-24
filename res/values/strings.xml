@@ -38,4 +38,12 @@
 <string name="avoid_status_bar_desc_off">images will be placed also back of status bar. matches with transparent status bar.</string>
 <string name="avoid_status_bar_desc_on">images will avoid status bar.</string>
 
+<string name="fullcolor_title">24bit color</string>
+<string name="fullcolor_desc_off">for loading image, use RGB_565</string>
+<string name="fullcolor_desc_on">for loading image, use ARGB_8888</string>
+
+<string name="dither_title">dither output</string>
+<string name="dither_desc_off">color depth of output image is same as loaded image.</string>
+<string name="dither_desc_on">color depth of output image is forced to RGB_565 with dithering.</string>
+
 </resources>

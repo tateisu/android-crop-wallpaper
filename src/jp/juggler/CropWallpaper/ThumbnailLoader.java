@@ -40,6 +40,7 @@ public class ThumbnailLoader {
 		bitmap_exists = new HashSet<Integer>();
 		// start background worker
 		worker = new Worker();
+		worker.setPriority(Thread.MIN_PRIORITY);
 		worker.start();
 	}
 	public void worker_stop(){
@@ -103,6 +104,7 @@ public class ThumbnailLoader {
 			BitmapFactory.Options load_option = new BitmapFactory.Options();
 			load_option.inPurgeable = true;
 			load_option.inDensity = 0;
+			load_option.inPreferredConfig=Bitmap.Config.ARGB_8888;
 
 			BitmapFactory.Options check_option = new BitmapFactory.Options();
 			check_option.inJustDecodeBounds  = true;
@@ -266,6 +268,7 @@ public class ThumbnailLoader {
 					c.drawARGB(255,0,0,0);
 					Paint paint = new Paint();
 					paint.setFilterBitmap(true);
+					paint.setDither(true);
 					c.drawBitmap(src_image,src_rect,shown_image_rect,paint);
 				}catch(Throwable ex){
 					ex.printStackTrace();

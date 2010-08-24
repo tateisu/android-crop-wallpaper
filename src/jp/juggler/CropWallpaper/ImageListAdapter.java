@@ -37,7 +37,7 @@ public class ImageListAdapter extends ArrayAdapter<ImageInfo> {
 		int n = gv.getLastVisiblePosition() - gv.getFirstVisiblePosition(); 
 		
 		if(view == null){
-			log.d("create view %d",idx);
+			// if(idx!=0) log.d("create view %d",idx);
 			view = inflater.inflate(R.layout.thumbnail_item, null);
 			view.setLayoutParams(new GridView.LayoutParams(w,h));
 			iv = (ImageView)view.findViewById(R.id.image);
