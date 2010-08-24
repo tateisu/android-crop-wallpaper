@@ -24,8 +24,8 @@
 
 <string name="pref_title">preferences</string>
 <string name="image_ram_limit_title">image size limit(MB)</string>
-<string name="image_ram_limit_title_desc">If the decoded size of an image exceeds %dMB, it will be downsampling at the time of loading.</string>
-<string name="image_ram_limit_title_error">please input integer between 5..100</string>
+<string name="image_ram_limit_desc">If the decoded size of an image exceeds %dMB, it will be downsampling at the time of loading.</string>
+<string name="image_ram_limit_error">please input integer between 5..100</string>
 
 <string name="thumbnail_fetch_count_title">thumbnail preload count</string>
 <string name="thumbnail_fetch_count_desc">%d thumbnails near scroll position will be loaded.</string>
