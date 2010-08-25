@@ -1,5 +1,9 @@
 package jp.juggler.CropWallpaper;
 
+import jp.juggler.util.LogCategory;
+
+import com.nullwire.trace.ExceptionHandler;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,7 +11,7 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
 public class MyApp extends android.app.Application{
-	static final String pref_file = "pref.txt";
+	static final LogCategory log = new LogCategory("MyApp");
 	
 	static void pref_init(Context context){
 		try{
@@ -36,6 +40,18 @@ public class MyApp extends android.app.Application{
 		}catch(Throwable ex){
 			return false;
 		}
+	}
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		log.d("onCreate");
+		ExceptionHandler.register(this, "http://juggler.jp/tateisu/android/err.php"); 
+		Thread.yield();
 	}	
+	
+	String a = null;
+	void test(){
+		log.d("this line raises error %d",a.length());
+	}
 
 }
