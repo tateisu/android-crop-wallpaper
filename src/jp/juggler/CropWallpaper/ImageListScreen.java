@@ -15,6 +15,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.PixelFormat;
 import android.net.Uri;
@@ -154,13 +155,13 @@ public class ImageListScreen extends Activity {
 				if(bFavorited){
 					try{
 						ui_db.execSQL("insert into favorites(_id,_data)values(?,?)",new Object[]{info.id,info.datapath});
-					}catch(Throwable ex){
+					}catch(SQLException ex){
 						ex.printStackTrace();
 					}
 				}else{
 					try{
 						ui_db.execSQL("delete from favorites where _id=?",new Object[]{info.id});
-					}catch(Throwable ex){
+					}catch(SQLException ex){
 						ex.printStackTrace();
 					}
 				}
@@ -192,10 +193,9 @@ public class ImageListScreen extends Activity {
 	    	return null;
 	    case dialog_delete_warning:
 			{
-				log.d("create dialog ..");
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
 				builder.setTitle(R.string.delete_warning_title);
-				builder.setMessage("Are you sure you want to exit?")
+				builder.setMessage("")
 				       .setCancelable(true)
 				       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 				           public void onClick(DialogInterface dialog, int id) {
@@ -229,17 +229,11 @@ public class ImageListScreen extends Activity {
 	
 	void delete_last_item(){
 		log.d("delete_last_item..");
-		try{
-			Uri base_uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-			Uri item_uri = ContentUris.withAppendedId(base_uri, last_selected_item.id);
-			ContentResolver cr = getContentResolver();
-			cr.delete(item_uri,null,null);
-			adapter.remove(last_selected_item);
-		}catch(Throwable ex){
-			ex.printStackTrace();
-			Toast toast = Toast.makeText(this,ex.getMessage(),Toast.LENGTH_SHORT);
-			toast.show();
-		}
+		Uri base_uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+		Uri item_uri = ContentUris.withAppendedId(base_uri, last_selected_item.id);
+		ContentResolver cr = getContentResolver();
+		cr.delete(item_uri,null,null);
+		adapter.remove(last_selected_item);
 	}
 
 	////////////////////////////////////////////
@@ -387,84 +381,80 @@ public class ImageListScreen extends Activity {
 			}
 
 			public void run(){
-				try{
-					log.d("list worker start. position=%d",cur.getPosition());
-					log.d("list worker folder_mode=%s",(dirname != null ) );
-					
-					
-					String[] bind1 = new String[1];
-					while(!bCancelled && !bComplete){
-						if( dirname != null ){
-			        		String path = cur.getString(idx_data);
-		        			int pos = path.lastIndexOf('/');
-			        		if( bDirectoryFilter && !dirname.equals( path.substring(0,pos)) ){
-			        			// not in dir
-			        		}else{
-				        		ImageInfo info = new ImageInfo();
-				        		info.id = cur.getLong(idx_id);
-				        		info.datapath = path;
-				        		info.name = cur.getString(idx_name);
-				        		info.showState = 0;
-				        		
-				        		// check favorites
-				        		bind1[0]=Long.toString(info.id);
-				        		Cursor cur2 = worker_db.rawQuery (" select _id from favorites where _id=?",bind1);
-				        		try{
-				        			if(cur2.moveToFirst()) info.favorited = true;
-				        		}finally{
-				        			cur2.close();
-				        		}
-				        		queue.add(info);
+				log.d("list worker start. position=%d",cur.getPosition());
+				log.d("list worker folder_mode=%s",(dirname != null ) );
+
+				String[] bind1 = new String[1];
+				while(!bCancelled && !bComplete){
+					if( dirname != null ){
+		        		String path = cur.getString(idx_data);
+	        			int pos = path.lastIndexOf('/');
+		        		if( bDirectoryFilter && !dirname.equals( path.substring(0,pos)) ){
+		        			// not in dir
+		        		}else{
+			        		ImageInfo info = new ImageInfo();
+			        		info.id = cur.getLong(idx_id);
+			        		info.datapath = path;
+			        		info.name = cur.getString(idx_name);
+			        		info.showState = 0;
+			        		
+			        		// check favorites
+			        		bind1[0]=Long.toString(info.id);
+			        		Cursor cur2 = worker_db.rawQuery (" select _id from favorites where _id=?",bind1);
+			        		try{
+			        			if(cur2.moveToFirst()) info.favorited = true;
+			        		}finally{
+			        			cur2.close();
 			        		}
-						}else{
-							long id = cur.getLong(idx_id);
-							Uri item_uri = ContentUris.withAppendedId(base_uri,id);
-							Cursor cur2 = managedQuery(item_uri,null, null, null, null);
-							try{
-								if(cur2.moveToFirst() ){
-						    		int idx_data = cur2.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-						    		int idx_name = cur2.getColumnIndex(MediaStore.Images.ImageColumns.TITLE);
-					        		ImageInfo info = new ImageInfo();
-					        		info.id = id;
-					        		info.datapath = cur2.getString(idx_data);
-					        		info.name = cur2.getString(idx_name);
-					        		info.favorited = true;
-					        		queue.add(info);
-								}
-							}finally{
-								cur2.close();
+			        		queue.add(info);
+		        		}
+					}else{
+						long id = cur.getLong(idx_id);
+						Uri item_uri = ContentUris.withAppendedId(base_uri,id);
+						Cursor cur2 = managedQuery(item_uri,null, null, null, null);
+						try{
+							if(cur2.moveToFirst() ){
+					    		int idx_data = cur2.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+					    		int idx_name = cur2.getColumnIndex(MediaStore.Images.ImageColumns.TITLE);
+				        		ImageInfo info = new ImageInfo();
+				        		info.id = id;
+				        		info.datapath = cur2.getString(idx_data);
+				        		info.name = cur2.getString(idx_name);
+				        		info.favorited = true;
+				        		queue.add(info);
 							}
-						}
-						if( queue.size() > 0){
-							ui_handler.post(new Runnable(){
-								@Override
-								public void run() {
-									if( ImageListScreen.this.isFinishing() ) return;
-									for(;;){
-										ImageInfo info = queue.poll();
-										if(info==null) break;
-										adapter.add(info);
-									}
-								}
-							});
-						}
-						
-						if( !cur.moveToNext() ){
-							bComplete = true;
-							log.d("list_loader complete!");
-							ui_handler.post(new Runnable(){
-								@Override
-								public void run() {
-									if( ImageListScreen.this.isFinishing() ) return;
-									setProgressBarIndeterminateVisibility(false);
-								}
-							});
+						}finally{
+							cur2.close();
 						}
 					}
-					log.d("list worker breaked. position=%d",cur.getPosition());
-				}catch(Throwable ex){
-					ex.printStackTrace();
+					if( queue.size() > 0){
+						ui_handler.post(new Runnable(){
+							@Override
+							public void run() {
+								if( ImageListScreen.this.isFinishing() ) return;
+								for(;;){
+									ImageInfo info = queue.poll();
+									if(info==null) break;
+									adapter.add(info);
+								}
+							}
+						});
+					}
+					
+					if( cur.moveToNext() ) continue;
+					
+					// 終端
+					bComplete = true;
+					log.d("list_loader complete!");
+					ui_handler.post(new Runnable(){
+						@Override
+						public void run() {
+							if( isFinishing() ) return;
+							setProgressBarIndeterminateVisibility(false);
+						}
+					});
 				}
+				log.d("list worker breaked. position=%d",cur.getPosition());
 			}
 		}
 	}

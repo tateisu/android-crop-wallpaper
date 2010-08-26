@@ -15,15 +15,32 @@ public class DirListAdapter extends ArrayAdapter<DirInfo>{
 		super(context,R.layout.folder_item,list);
 		inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
+	
+	static class ViewHolder{
+		TextView name;
+		TextView count;
+	}
 
 	@Override
 	public View getView(int idx, View view, ViewGroup parent) {
-		if(view==null) view = inflater.inflate(R.layout.folder_item, null); 
+		ViewHolder holder;
+		if(view==null){
+			view = inflater.inflate(R.layout.folder_item, null);
+			holder = new ViewHolder();
+			view.setTag(holder);
+			holder.name = (TextView)view.findViewById(R.id.name);
+			holder.count = (TextView)view.findViewById(R.id.count);
+		}else{
+			holder = (ViewHolder)view.getTag();
+		}
+
 		DirInfo src = getItem(idx);
-    	
-    	((TextView)view.findViewById(R.id.name)).setText(src.name);
-    	((TextView)view.findViewById(R.id.count)).setText(Integer.toString(src.count));
-		return view;
+    	holder.name.setText(src.name);
+    	holder.count.setText(Integer.toString(src.count));
+
+    	return view;
 	}
+	
+
 	
 }

@@ -1,10 +1,8 @@
 package jp.juggler.CropWallpaper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import jp.juggler.util.LogCategory;
 import jp.juggler.util.WorkerBase;
@@ -59,16 +57,14 @@ public class FolderListScreen extends Activity {
 			}
 		});
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		try{
-			log.d("onActivityResult req="+requestCode+",result="+resultCode);
-			log.d("onActivityResult data="+(data==null?"null":data.toString()));
-		}catch(Throwable ex){
-			ex.printStackTrace();
-		}
+		log.d("onActivityResult req="+requestCode+",result="+resultCode);
+		log.d("onActivityResult data="+(data==null?"null":data.toString()));
+
+		// ピッカー動作中は受け取ったリザルトにデータがあればそれを呼び出し元に返す
 		if( data != null ){
 			if( Intent.ACTION_GET_CONTENT.equals(opener.getAction() )
 			||  Intent.ACTION_PICK.equals(opener.getAction() )
@@ -154,11 +150,18 @@ public class FolderListScreen extends Activity {
     class Listloader {
     	SQLiteDatabase worker_db;
     	Cursor cur;
-    	HashMap<String,DirInfo> dir_map = new HashMap<String,DirInfo>();
+    	TreeMap<String,DirInfo> dir_map;
     	boolean bComplete;
     	int idx_data;
     	void open(){
+			dir_map = new TreeMap<String,DirInfo>(new Comparator<String>(){
+				@Override public int compare(String a, String b) {
+					return a.compareToIgnoreCase(b);
+				}
+	        });
+
     		worker_db = helper.getWritableDatabase();
+
     		// お気に入り
         	{
 		        DirInfo favorites = new DirInfo();
@@ -223,44 +226,33 @@ public class FolderListScreen extends Activity {
 				bCancelled = true;
 			}
 			public void run(){
-				try{
-					while(!bCancelled && !bComplete){
-		            	String path = cur.getString(idx_data);
-		            	int end = path.lastIndexOf('/');
-		            	String dirname = path.substring(0,end);
-		            	DirInfo d = dir_map.get(dirname);
-		            	if(d==null){
-		            		d = new DirInfo();
-		            		d.name = dirname;
-		            		dir_map.put(dirname,d);
-		            	}
-			            ++d.count;
-			            
-			            if(!cur.moveToNext()){
-			            	bComplete = true;
-			            	ui_handler.post(new Runnable() {
-								@Override
-								public void run() {
-									if(isFinishing()) return;
-									ArrayList<DirInfo> list = new ArrayList<DirInfo>();
-							        for(Entry<String,DirInfo> entry : dir_map.entrySet() ){
-							        	list.add( entry.getValue() ); 
-							        }
-							        Collections.sort(list,new Comparator<DirInfo>(){
-										@Override public int compare(DirInfo a, DirInfo b) {
-											return a.name.compareToIgnoreCase(b.name);
-										}
-							        });
-							        for(DirInfo item : list ){
-							        	adapter.add(item);
-							        }
-							        setProgressBarIndeterminateVisibility(false);
-								}
-							});
-			            }
-					}
-				}catch (Throwable ex) {
-					ex.printStackTrace();
+				while(!bCancelled && !bComplete){
+	            	String path = cur.getString(idx_data);
+	            	int end = path.lastIndexOf('/');
+	            	String dirname = path.substring(0,end);
+	            	DirInfo d = dir_map.get(dirname);
+	            	if(d==null){
+	            		d = new DirInfo();
+	            		d.name = dirname;
+	            		dir_map.put(dirname,d);
+	            	}
+		            ++d.count;
+
+		            if( cur.moveToNext() ) continue;
+		            
+		            // 終端に達した
+	            	bComplete = true;
+	            	ui_handler.post(new Runnable() {
+						@Override public void run() {
+							if(isFinishing()) return;
+					        // ListViewに追加する
+					        for(DirInfo item : dir_map.values() ){
+					        	adapter.add(item);
+					        }
+					        // スピナーを停止
+							setProgressBarIndeterminateVisibility(false);
+						}
+					});
 				}
 			}
     	}

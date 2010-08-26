@@ -28,33 +28,36 @@ public class ImageListAdapter extends ArrayAdapter<ImageInfo> {
 		this.h =  h;
 	}
 
+	static class ViewHolder{
+		ImageView thumb;
+		TextView caption;
+		ImageView star;
+	}
+	
 	static final int tag_idx = 1;
 	@Override
 	public View getView(int idx, View view, ViewGroup parent) {
-		ImageView iv;
+		ViewHolder holder;
+		
+		
+		if(view == null){
+			view = inflater.inflate(R.layout.thumbnail_item, null);
+			view.setLayoutParams(new GridView.LayoutParams(w,h));
+			holder = new ViewHolder();
+			holder.thumb =(ImageView)view.findViewById(R.id.image);
+			holder.caption=(TextView)view.findViewById(R.id.name);
+			holder.star=(ImageView)view.findViewById(R.id.star);
+			view.setTag(holder);
+		}else{
+			holder = (ViewHolder)view.getTag();
+		}
 
 		GridView gv = (GridView)parent;
 		int n = gv.getLastVisiblePosition() - gv.getFirstVisiblePosition(); 
-		
-		if(view == null){
-			// if(idx!=0) log.d("create view %d",idx);
-			view = inflater.inflate(R.layout.thumbnail_item, null);
-			view.setLayoutParams(new GridView.LayoutParams(w,h));
-			iv = (ImageView)view.findViewById(R.id.image);
-		}else{
-			iv = (ImageView)view.findViewById(R.id.image);
-		}
 
-		ImageInfo info = loader.update_view(iv,idx,n);
-		updateCaption(view,info);
+		ImageInfo info = loader.update_view(holder.thumb,idx,n);
+		holder.caption.setText(info.name);
+		holder.star.setVisibility( info.favorited ? View.VISIBLE : View.GONE );
 		return view;
 	}
-	
-	public void updateCaption(View view,ImageInfo info){
-		TextView caption = (TextView)view.findViewById(R.id.name);
-		caption.setText(info.name);
-		ImageView star = (ImageView)view.findViewById(R.id.star);
-		star.setVisibility( info.favorited ? View.VISIBLE : View.GONE );
-	}
-	
 }

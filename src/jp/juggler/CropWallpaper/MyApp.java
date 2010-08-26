@@ -1,8 +1,7 @@
 package jp.juggler.CropWallpaper;
 
+import jp.juggler.util.ExceptionHandler;
 import jp.juggler.util.LogCategory;
-
-import com.nullwire.trace.ExceptionHandler;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,26 +9,23 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
-public class MyApp extends android.app.Application{
+public class MyApp extends android.app.Application {
 	static final LogCategory log = new LogCategory("MyApp");
+	static final boolean debug = false;
 	
 	static void pref_init(Context context){
-		try{
-			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-			Editor edit = pref.edit();
-			if( ! pref.contains("image_ram_limit") ) edit.putString("image_ram_limit","10");
-			if( ! pref.contains("thumbnail_fetch_count") ) edit.putString("thumbnail_fetch_count","23");
-			if( ! pref.contains("thumbnail_singletap_action") ) edit.putString("thumbnail_singletap_action",Intent.ACTION_VIEW);
-			edit.commit();
-		}catch(Throwable ex){
-			ex.printStackTrace();
-		}
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+		Editor edit = pref.edit();
+		if( ! pref.contains("image_ram_limit") ) edit.putString("image_ram_limit","10");
+		if( ! pref.contains("thumbnail_fetch_count") ) edit.putString("thumbnail_fetch_count","23");
+		if( ! pref.contains("thumbnail_singletap_action") ) edit.putString("thumbnail_singletap_action",Intent.ACTION_VIEW);
+		edit.commit();
 	}
 	static final int parseInt(Object v,int def,int min,int max){
 		try{
 			int n = Integer.parseInt(v.toString());
 			return n<min?min:n>max?max:n;
-		}catch(Throwable ex){
+		}catch(NumberFormatException ex){
 			return def;
 		}
 	}
@@ -37,15 +33,19 @@ public class MyApp extends android.app.Application{
 		try{
 			int n= Integer.parseInt(v.toString());
 			return (n<min||n>max)?false:true;
-		}catch(Throwable ex){
+		}catch(NumberFormatException ex){
 			return false;
 		}
 	}
+	
+
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		log.d("onCreate");
-		ExceptionHandler.register(this, "http://juggler.jp/tateisu/android/err.php"); 
+		if(debug) log.d("onCreate");
+		
+		ExceptionHandler.regist();
 		Thread.yield();
 	}	
 	
@@ -53,5 +53,6 @@ public class MyApp extends android.app.Application{
 	void test(){
 		log.d("this line raises error %d",a.length());
 	}
+
 
 }

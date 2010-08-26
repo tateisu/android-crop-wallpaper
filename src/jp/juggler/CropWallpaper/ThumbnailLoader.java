@@ -254,27 +254,22 @@ public class ThumbnailLoader {
 				
 				Bitmap shown_image;
 				
-				try{
-					// リサイズされたBitmapを作成する
-					shown_image = Bitmap.createBitmap(outer_xsize,outer_ysize,src_image.getConfig());
-					Rect src_rect = new Rect(0,0,src_xsize,src_ysize);
-					RectF shown_image_rect = new RectF(
-						 image_left
-						,image_top
-						,image_left + shown_xsize
-						,image_top  + shown_ysize
-					);
-					Canvas c = new Canvas(shown_image);
-					c.drawARGB(255,0,0,0);
-					Paint paint = new Paint();
-					paint.setFilterBitmap(true);
-					paint.setDither(true);
-					c.drawBitmap(src_image,src_rect,shown_image_rect,paint);
-				}catch(Throwable ex){
-					ex.printStackTrace();
-					shown_image = BitmapFactory.decodeResource(context.getResources(),R.raw.test);
-				}
-				
+				// リサイズされたBitmapを作成する
+				shown_image = Bitmap.createBitmap(outer_xsize,outer_ysize,src_image.getConfig());
+				Rect src_rect = new Rect(0,0,src_xsize,src_ysize);
+				RectF shown_image_rect = new RectF(
+					 image_left
+					,image_top
+					,image_left + shown_xsize
+					,image_top  + shown_ysize
+				);
+				Canvas c = new Canvas(shown_image);
+				c.drawARGB(255,0,0,0);
+				Paint paint = new Paint();
+				paint.setFilterBitmap(true);
+				paint.setDither(true);
+				c.drawBitmap(src_image,src_rect,shown_image_rect,paint);
+
 				// 元画像を破棄
 				src_image.recycle();
 
