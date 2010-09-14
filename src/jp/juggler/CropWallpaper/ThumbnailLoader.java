@@ -255,7 +255,7 @@ public class ThumbnailLoader {
 				Bitmap shown_image;
 				
 				// リサイズされたBitmapを作成する
-				shown_image = Bitmap.createBitmap(outer_xsize,outer_ysize,src_image.getConfig());
+				shown_image = Bitmap.createBitmap(outer_xsize,outer_ysize,Bitmap.Config.RGB_565);
 				Rect src_rect = new Rect(0,0,src_xsize,src_ysize);
 				RectF shown_image_rect = new RectF(
 					 image_left

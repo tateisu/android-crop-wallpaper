@@ -553,7 +553,7 @@ public final class CropWallpaper extends Activity {
 			shown_image_rect = new RectF(x,y,x + shown_w,y + shown_h);
 
 			// 表示用のbitmapを生成
-			shown_image = Bitmap.createBitmap(frame_w,frame_h,src_image.getConfig());
+			shown_image = Bitmap.createBitmap(frame_w,frame_h,MyApp.getBitmapConfig(src_image, Bitmap.Config.ARGB_8888));
 			Paint paint = new Paint();
 			paint.setFilterBitmap(true);
 			Canvas c = new Canvas(shown_image);
@@ -642,8 +642,11 @@ public final class CropWallpaper extends Activity {
 		}
 		public void run(){
 			boolean bDither = PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this).getBoolean("dither",false);
-			
-			final Bitmap wall_image = Bitmap.createBitmap(wall_w,wall_h_real,bDither ? Bitmap.Config.RGB_565 : src_image.getConfig());
+			final Bitmap wall_image = Bitmap.createBitmap(
+					wall_w
+					,wall_h_real
+					,(bDither ? Bitmap.Config.RGB_565 : MyApp.getBitmapConfig(src_image, Bitmap.Config.ARGB_8888) )
+			);
 			Canvas c = new Canvas(wall_image);
 			c.drawARGB(255,0,0,0);
 			Paint paint = new Paint();
@@ -693,7 +696,7 @@ public final class CropWallpaper extends Activity {
 			}
 			// 
 			src_image.recycle();
-			log.d("set wallpaper:%d,%d,%s",wall_image.getWidth(),wall_image.getHeight(),wall_image.getConfig());
+			log.d("set wallpaper:%d,%d,%s",wall_image.getWidth(),wall_image.getHeight(),MyApp.getBitmapConfig(wall_image,Bitmap.Config.RGB_565));
 			ui_handler.post(new Runnable() {
 				@Override public void run() {
 					if(isFinishing()) return;

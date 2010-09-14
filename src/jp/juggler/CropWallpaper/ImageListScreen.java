@@ -17,7 +17,6 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,9 +48,6 @@ public class ImageListScreen extends Activity {
 	Handler ui_handler ;
 	
 	void initUI(){
-		if( PreferenceManager.getDefaultSharedPreferences(this).getBoolean("fullcolor",false) ){
-			getWindow().setFormat(PixelFormat.RGBA_8888);
-		}
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.thumbnail_list_screen);
         setProgressBarIndeterminateVisibility(true);

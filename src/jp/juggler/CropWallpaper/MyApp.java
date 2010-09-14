@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 
 public class MyApp extends android.app.Application {
@@ -38,6 +39,13 @@ public class MyApp extends android.app.Application {
 		}
 	}
 	
+	static final Bitmap.Config getBitmapConfig(Bitmap image,Bitmap.Config defval){
+		if(image!=null){
+			Bitmap.Config config = image.getConfig();
+			if(config!=null) return config;
+		}
+		return defval;
+	}
 
 	
 	@Override
