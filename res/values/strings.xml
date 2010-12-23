@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-<string name="app_name">CropWallpaper</string>
+<string name="app_name">Crop Wallpaper</string>
 <string name="all_images">all images</string>
 <string name="favorite">favorites</string>
 <string name="favorite_addremove">add/remove favorites</string>

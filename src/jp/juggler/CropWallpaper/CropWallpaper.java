@@ -137,7 +137,6 @@ public final class CropWallpaper extends Activity {
         btnOk.setEnabled(false);
         tbOverall.setEnabled(false);
         tbOverall.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				bOverall = isChecked;
 				if( isChecked ){
@@ -155,7 +154,6 @@ public final class CropWallpaper extends Activity {
 
     	// 選択範囲の移動と拡大
     	ivSelection.setOnTouchListener(new OnTouchListener() {
-			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				// 初期化がまだなら処理しない
 				if(bLoading) return false;
@@ -262,7 +260,6 @@ public final class CropWallpaper extends Activity {
 
     	// キャンセルボタン
     	btnCancel.setOnClickListener(new OnClickListener() {
-			@Override
 			public void onClick(View v) {
 				finish();
 			}
@@ -270,7 +267,6 @@ public final class CropWallpaper extends Activity {
 
     	// 壁紙セット
     	btnOk.setOnClickListener(new OnClickListener() {
-			@Override
 			public void onClick(View v) {
 				if(bLoading) return;
 				
@@ -363,12 +359,12 @@ public final class CropWallpaper extends Activity {
 					,intent.getExtras()
 			);
 			Bundle extra = intent.getExtras();
-			
-			for( String key : extra.keySet() ){
-				log.d("key=%s",key);
+			if( extra != null ){
+				for( String key : extra.keySet() ){
+					log.d("key=%s",key);
+				}
+				uri  = (Uri)extra.get(Intent.EXTRA_STREAM);
 			}
-	
-			uri  = (Uri)extra.get(Intent.EXTRA_STREAM);
 			if(uri==null){
 				finish();
 				return;
@@ -389,11 +385,12 @@ public final class CropWallpaper extends Activity {
 			bCancelled = true;
 			notifyEx();
 		}
+		@Override
 		public void run(){
 			if(src_image == null ){
 				if( uri == null ){
 					ui_handler.post(new Runnable() {
-						@Override public void run() {
+						public void run() {
 							if(isFinishing()) return;
 							Toast.makeText(CropWallpaper.this,"missing uri in arguments.",Toast.LENGTH_SHORT).show();
 						}
@@ -406,6 +403,7 @@ public final class CropWallpaper extends Activity {
 				wall_w = wpm.getDesiredMinimumWidth();
 				wall_h = wall_h_real = wpm.getDesiredMinimumHeight();
 				if( bAvoidStatusBar) wall_h -= statusBarHeight;
+				if( wall_h < 1 ) wall_h = 1;
 		    	wp_aspect = wall_w/(float)wall_h;
 				log.d("statusBarHeight=%d,wall_h=%d(%d)",statusBarHeight,wall_h,wall_h_real);
 
@@ -450,13 +448,15 @@ public final class CropWallpaper extends Activity {
 					}finally{
 						is.close();
 					}
-				}catch(IOException ex){
+				}catch(Throwable ex){
+					// IOException  
+					// SecurityException: reading com.android.providers.telephony.MmsProvider
 					ex.printStackTrace();
 				}
 				if( check_option.outWidth < 1 || check_option.outHeight < 1 ){
 					log.e("load failed.");
 					ui_handler.post(new Runnable() {
-						@Override public void run() {
+						public void run() {
 							if(isFinishing()) return;
 							Toast.makeText(CropWallpaper.this,"load failed.",Toast.LENGTH_SHORT).show();
 						}
@@ -489,7 +489,7 @@ public final class CropWallpaper extends Activity {
 				if( src_image == null ){
 					log.e("load failed.");
 					ui_handler.post(new Runnable() {
-						@Override public void run() {
+						public void run() {
 							if(isFinishing()) return;
 							Toast.makeText(CropWallpaper.this,"load failed.",Toast.LENGTH_SHORT).show();
 						}
@@ -577,7 +577,6 @@ public final class CropWallpaper extends Activity {
 			prev_selection.set(x, y, x + selection_w, y + selection_h);
 
 			ui_handler.post(new Runnable() {
-				@Override
 				public void run() {
 					if(bCancelled) return;
 					// 画像を表示
@@ -640,6 +639,7 @@ public final class CropWallpaper extends Activity {
 		public void cancel() {
 			// このタスクはキャンセルできない
 		}
+		@Override
 		public void run(){
 			boolean bDither = PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this).getBoolean("dither",false);
 			final Bitmap wall_image = Bitmap.createBitmap(
@@ -698,7 +698,7 @@ public final class CropWallpaper extends Activity {
 			src_image.recycle();
 			log.d("set wallpaper:%d,%d,%s",wall_image.getWidth(),wall_image.getHeight(),MyApp.getBitmapConfig(wall_image,Bitmap.Config.RGB_565));
 			ui_handler.post(new Runnable() {
-				@Override public void run() {
+				public void run() {
 					if(isFinishing()) return;
 					try{
 						wpm.clear();

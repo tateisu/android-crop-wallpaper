@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-<string name="app_name">crop wallpaper</string>
+<string name="app_name">Crop Wallpaper</string>
 <string name="all_images">すべての画像</string>
 <string name="favorite">お気に入り</string>
 <string name="favorite_addremove">お気に入りの登録/解除</string>

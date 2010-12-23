@@ -97,6 +97,7 @@ public class ThumbnailLoader {
 			notifyEx();
 		}
 		int load_pref = 30; 
+		@Override
 		public void run(){
 			String pref_val = PreferenceManager.getDefaultSharedPreferences(context).getString("thumbnail_fetch_count", null);
 			load_pref = MyApp.parseInt(pref_val,30,15,9999);
@@ -125,7 +126,6 @@ public class ThumbnailLoader {
 						}
 						wait_updates.clear();
 						ui_handler.post(new Runnable() {
-							@Override
 							public void run() {
 								if(bCancelled) return;
 								adapter.notifyDataSetChanged();

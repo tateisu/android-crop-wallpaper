@@ -44,7 +44,6 @@ public class FolderListScreen extends Activity {
         adapter = new DirListAdapter(this,new ArrayList<DirInfo>());
         lvDirectory.setAdapter(adapter);
         lvDirectory.setOnItemClickListener(new OnItemClickListener() {
-			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
 				DirListAdapter adapter = (DirListAdapter)parent.getAdapter();
 				DirInfo info = adapter.getItem(pos);
@@ -155,7 +154,7 @@ public class FolderListScreen extends Activity {
     	int idx_data;
     	void open(){
 			dir_map = new TreeMap<String,DirInfo>(new Comparator<String>(){
-				@Override public int compare(String a, String b) {
+				public int compare(String a, String b) {
 					return a.compareToIgnoreCase(b);
 				}
 	        });
@@ -185,10 +184,10 @@ public class FolderListScreen extends Activity {
 	    		, null
 	    		, null
 	        );
-        	if( !cur.moveToFirst() ){
-        		bComplete = true;
-        		cur.close();
+        	if( cur == null || !cur.moveToFirst() ){
+        		if(cur!=null) cur.close();
         		cur = null;
+        		bComplete = true;
         	}else{
         		idx_data = cur.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
         	}
@@ -225,6 +224,7 @@ public class FolderListScreen extends Activity {
 			public void cancel() {
 				bCancelled = true;
 			}
+			@Override
 			public void run(){
 				while(!bCancelled && !bComplete){
 	            	String path = cur.getString(idx_data);
@@ -243,7 +243,7 @@ public class FolderListScreen extends Activity {
 		            // 終端に達した
 	            	bComplete = true;
 	            	ui_handler.post(new Runnable() {
-						@Override public void run() {
+						public void run() {
 							if(isFinishing()) return;
 					        // ListViewに追加する
 					        for(DirInfo item : dir_map.values() ){

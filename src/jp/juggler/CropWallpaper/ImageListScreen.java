@@ -66,7 +66,6 @@ public class ImageListScreen extends Activity {
 		lvThumbnailView.setAdapter(adapter);
         
         lvThumbnailView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
 				startChild(pos,null);
 			}
@@ -376,6 +375,7 @@ public class ImageListScreen extends Activity {
 				notifyEx();
 			}
 
+			@Override
 			public void run(){
 				log.d("list worker start. position=%d",cur.getPosition());
 				log.d("list worker folder_mode=%s",(dirname != null ) );
@@ -425,7 +425,6 @@ public class ImageListScreen extends Activity {
 					}
 					if( queue.size() > 0){
 						ui_handler.post(new Runnable(){
-							@Override
 							public void run() {
 								if( ImageListScreen.this.isFinishing() ) return;
 								for(;;){
@@ -443,7 +442,6 @@ public class ImageListScreen extends Activity {
 					bComplete = true;
 					log.d("list_loader complete!");
 					ui_handler.post(new Runnable(){
-						@Override
 						public void run() {
 							if( isFinishing() ) return;
 							setProgressBarIndeterminateVisibility(false);

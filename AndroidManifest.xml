@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="jp.juggler.CropWallpaper"
-      android:versionCode="22"
-      android:versionName="1.22">
+      android:versionCode="23"
+      android:versionName="1.23">
    
     <uses-sdk
-    	android:minSdkVersion="5" 
+    	android:minSdkVersion="7" 
         android:targetSdkVersion="8"
-        android:maxSdkVersion="8"
     />
 
    	<supports-screens
