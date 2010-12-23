@@ -66,6 +66,7 @@ public class ImageListScreen extends Activity {
 		lvThumbnailView.setAdapter(adapter);
         
         lvThumbnailView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
 				startChild(pos,null);
 			}
@@ -193,13 +194,15 @@ public class ImageListScreen extends Activity {
 				builder.setMessage("")
 				       .setCancelable(true)
 				       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-				           public void onClick(DialogInterface dialog, int id) {
+				           @Override
+						public void onClick(DialogInterface dialog, int id) {
 				                dialog.dismiss();
 				                delete_last_item();
 				           }
 				       })
 				       .setNegativeButton("No", new DialogInterface.OnClickListener() {
-				           public void onClick(DialogInterface dialog, int id) {
+				           @Override
+						public void onClick(DialogInterface dialog, int id) {
 				                dialog.cancel();
 				           }
 				       });
@@ -425,6 +428,7 @@ public class ImageListScreen extends Activity {
 					}
 					if( queue.size() > 0){
 						ui_handler.post(new Runnable(){
+							@Override
 							public void run() {
 								if( ImageListScreen.this.isFinishing() ) return;
 								for(;;){
@@ -442,6 +446,7 @@ public class ImageListScreen extends Activity {
 					bComplete = true;
 					log.d("list_loader complete!");
 					ui_handler.post(new Runnable(){
+						@Override
 						public void run() {
 							if( isFinishing() ) return;
 							setProgressBarIndeterminateVisibility(false);

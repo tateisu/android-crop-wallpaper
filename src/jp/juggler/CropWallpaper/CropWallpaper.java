@@ -137,6 +137,7 @@ public final class CropWallpaper extends Activity {
         btnOk.setEnabled(false);
         tbOverall.setEnabled(false);
         tbOverall.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				bOverall = isChecked;
 				if( isChecked ){
@@ -154,6 +155,7 @@ public final class CropWallpaper extends Activity {
 
     	// 選択範囲の移動と拡大
     	ivSelection.setOnTouchListener(new OnTouchListener() {
+			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				// 初期化がまだなら処理しない
 				if(bLoading) return false;
@@ -260,6 +262,7 @@ public final class CropWallpaper extends Activity {
 
     	// キャンセルボタン
     	btnCancel.setOnClickListener(new OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				finish();
 			}
@@ -267,6 +270,7 @@ public final class CropWallpaper extends Activity {
 
     	// 壁紙セット
     	btnOk.setOnClickListener(new OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				if(bLoading) return;
 				
@@ -390,6 +394,7 @@ public final class CropWallpaper extends Activity {
 			if(src_image == null ){
 				if( uri == null ){
 					ui_handler.post(new Runnable() {
+						@Override
 						public void run() {
 							if(isFinishing()) return;
 							Toast.makeText(CropWallpaper.this,"missing uri in arguments.",Toast.LENGTH_SHORT).show();
@@ -456,6 +461,7 @@ public final class CropWallpaper extends Activity {
 				if( check_option.outWidth < 1 || check_option.outHeight < 1 ){
 					log.e("load failed.");
 					ui_handler.post(new Runnable() {
+						@Override
 						public void run() {
 							if(isFinishing()) return;
 							Toast.makeText(CropWallpaper.this,"load failed.",Toast.LENGTH_SHORT).show();
@@ -489,6 +495,7 @@ public final class CropWallpaper extends Activity {
 				if( src_image == null ){
 					log.e("load failed.");
 					ui_handler.post(new Runnable() {
+						@Override
 						public void run() {
 							if(isFinishing()) return;
 							Toast.makeText(CropWallpaper.this,"load failed.",Toast.LENGTH_SHORT).show();
@@ -577,6 +584,7 @@ public final class CropWallpaper extends Activity {
 			prev_selection.set(x, y, x + selection_w, y + selection_h);
 
 			ui_handler.post(new Runnable() {
+				@Override
 				public void run() {
 					if(bCancelled) return;
 					// 画像を表示
@@ -698,6 +706,7 @@ public final class CropWallpaper extends Activity {
 			src_image.recycle();
 			log.d("set wallpaper:%d,%d,%s",wall_image.getWidth(),wall_image.getHeight(),MyApp.getBitmapConfig(wall_image,Bitmap.Config.RGB_565));
 			ui_handler.post(new Runnable() {
+				@Override
 				public void run() {
 					if(isFinishing()) return;
 					try{

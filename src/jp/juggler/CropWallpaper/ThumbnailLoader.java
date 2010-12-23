@@ -126,6 +126,7 @@ public class ThumbnailLoader {
 						}
 						wait_updates.clear();
 						ui_handler.post(new Runnable() {
+							@Override
 							public void run() {
 								if(bCancelled) return;
 								adapter.notifyDataSetChanged();

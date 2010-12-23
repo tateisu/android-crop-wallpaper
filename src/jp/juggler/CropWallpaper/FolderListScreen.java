@@ -44,6 +44,7 @@ public class FolderListScreen extends Activity {
         adapter = new DirListAdapter(this,new ArrayList<DirInfo>());
         lvDirectory.setAdapter(adapter);
         lvDirectory.setOnItemClickListener(new OnItemClickListener() {
+			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
 				DirListAdapter adapter = (DirListAdapter)parent.getAdapter();
 				DirInfo info = adapter.getItem(pos);
@@ -154,6 +155,7 @@ public class FolderListScreen extends Activity {
     	int idx_data;
     	void open(){
 			dir_map = new TreeMap<String,DirInfo>(new Comparator<String>(){
+				@Override
 				public int compare(String a, String b) {
 					return a.compareToIgnoreCase(b);
 				}
@@ -243,6 +245,7 @@ public class FolderListScreen extends Activity {
 		            // 終端に達した
 	            	bComplete = true;
 	            	ui_handler.post(new Runnable() {
+						@Override
 						public void run() {
 							if(isFinishing()) return;
 					        // ListViewに追加する

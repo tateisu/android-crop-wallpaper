@@ -33,6 +33,7 @@ public class MyPrefScreen extends PreferenceActivity {
 			et.setInputType(InputType.TYPE_CLASS_NUMBER);
 			
 			pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
 					if(!MyApp.checkInteger(newValue,5,100)){
 						Toast.makeText(MyPrefScreen.this,R.string.image_ram_limit_error,Toast.LENGTH_SHORT).show();
@@ -56,6 +57,7 @@ public class MyPrefScreen extends PreferenceActivity {
 			et.setInputType(InputType.TYPE_CLASS_NUMBER);
 
 			pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
 					if(!MyApp.checkInteger(newValue,15,9999)){
 						Toast.makeText(MyPrefScreen.this,R.string.thumbnail_fetch_count_error,Toast.LENGTH_SHORT).show();
@@ -74,6 +76,7 @@ public class MyPrefScreen extends PreferenceActivity {
 		{
 			ListPreference pref = (ListPreference)findPreference("thumbnail_singletap_action");
 			pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
 					ListPreference pref = (ListPreference)preference;
 					int idx = pref.findIndexOfValue(newValue.toString());
