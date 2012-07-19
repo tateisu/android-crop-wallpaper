@@ -31,6 +31,12 @@
 			android:summaryOn="@string/avoid_status_bar_desc_on"
 		/>
 		<CheckBoxPreference
+			android:key="avoid_navigation_bar"
+			android:title="@string/avoid_navigation_bar_title"
+			android:summaryOff="@string/avoid_navigation_bar_desc_off"
+			android:summaryOn="@string/avoid_navigation_bar_desc_on"
+		/>
+		<CheckBoxPreference
 			android:key="fullcolor"
 			android:title="@string/fullcolor_title"
 			android:summaryOff="@string/fullcolor_desc_off"
@@ -42,5 +48,52 @@
 			android:summaryOff="@string/dither_desc_off"
 			android:summaryOn="@string/dither_desc_on"
 		/>
+		
+		<jp.juggler.CropWallpaper.ColorPreference
+			android:key="padding_color"
+			android:title="@string/padding_color_title"
+			android:summary="@string/padding_color_desc"
+		/>
+
+		<EditTextPreference
+			android:key="output_width"
+			android:title="@string/output_width_title"
+			android:summary="@string/output_width_desc"
+			android:dialogTitle="@string/output_width_title"
+		/>
+		<EditTextPreference
+			android:key="output_height"
+			android:title="@string/output_height_title"
+			android:summary="@string/output_height_desc"
+			android:dialogTitle="@string/output_height_title"
+		/>
+		
+		<EditTextPreference
+			android:key="padding_left"
+			android:title="@string/padding_left_title"
+			android:summary="@string/padding_desc"
+			android:dialogTitle="@string/padding_left_title"
+		/>
+		<EditTextPreference
+			android:key="padding_right"
+			android:title="@string/padding_right_title"
+			android:summary="@string/padding_desc"
+			android:dialogTitle="@string/padding_right_title"
+		/>
+		<EditTextPreference
+			android:key="padding_top"
+			android:title="@string/padding_top_title"
+			android:summary="@string/padding_desc"
+			android:dialogTitle="@string/padding_top_title"
+		/>
+		<EditTextPreference
+			android:key="padding_bottom"
+			android:title="@string/padding_bottom_title"
+			android:summary="@string/padding_desc"
+			android:dialogTitle="@string/padding_bottom_title"
+		/>
+		
+		
+		
 	</PreferenceCategory>
 </PreferenceScreen>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="jp.juggler.CropWallpaper"
-      android:versionCode="23"
-      android:versionName="1.23">
+      android:versionCode="31"
+      android:versionName="1.31">
    
     <uses-sdk
     	android:minSdkVersion="7" 
-        android:targetSdkVersion="8"
+        android:targetSdkVersion="14"
     />
 
    	<supports-screens
@@ -15,6 +15,7 @@
 		android:smallScreens="true"
 		android:anyDensity="true"
     />
+	
 	<uses-permission android:name="android.permission.SET_WALLPAPER"/>
 
     <application
@@ -23,9 +24,10 @@
 		android:name="jp.juggler.CropWallpaper.MyApp"
 	>
 
-        <activity android:name=".FolderListScreen"
-                  android:label="@string/app_name"
-                  android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|fontScale"
+        <activity
+            android:name=".FolderListScreen"
+            android:label="@string/app_name"
+            android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|fontScale|screenSize"
         >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,14 +45,14 @@
         <activity
         	android:name=".ImageListScreen"
         	android:label="@string/app_name"
-                  android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|fontScale"
+            android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|fontScale|screenSize"
         >
         </activity>
 
         <activity
         	android:name=".MyPrefScreen"
         	android:label="@string/app_name"
-                  android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|fontScale"
+            android:configChanges="orientation|keyboard|keyboardHidden|screenLayout|fontScale"
         >
         </activity>
         

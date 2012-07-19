@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"  
+	android:layout_height="wrap_content"  
+	android:layout_width="wrap_content"
+	android:gravity="center"
+	android:paddingBottom="5dp"
+>
+	<!--  color sample (bg) -->
+	<TextView
+        android:layout_width="fill_parent"
+        android:layout_height="64dp"
+
+		android:layout_marginLeft="12dp"
+		android:layout_marginRight="12dp"
+		android:layout_marginTop="12dp"
+		android:layout_marginBottom="12dp"
+		android:layout_centerHorizontal="true"
+		
+		android:id="@+id/tvSample"
+        android:text=""
+        android:textColor="#FFFFFF"
+	/>
+
+	<ToggleButton
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"  
+
+		android:layout_alignLeft="@id/tvSample"
+        android:layout_alignTop="@+id/etSampleHex"
+        android:layout_alignBottom="@+id/etSampleHex"
+
+		android:textOff="@string/mode_color" 
+		android:textOn="@string/mode_color"
+		android:id="@+id/tbColor"
+	/>
+
+	<ToggleButton
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"  
+
+		android:layout_toRightOf="@id/tbColor"
+        android:layout_alignTop="@+id/etSampleHex"
+        android:layout_alignBottom="@+id/etSampleHex"
+
+		android:textOff="hex" 
+		android:textOn="hex"
+		android:id="@+id/tbHex"
+		android:checked="false"
+	/>
+
+	<!--  color sample (text) -->
+	<EditText
+        android:layout_width="140sp"
+        android:layout_height="wrap_content"
+
+        android:layout_toRightOf="@id/tbHex"
+        android:layout_below="@id/tvSample"
+
+		android:id="@+id/etSampleHex"
+        android:text="#888888"
+        android:gravity="center"
+        
+        android:visibility="invisible"
+	/>
+	
+
+	<SeekBar
+		android:layout_width="200dp"
+		android:layout_height="wrap_content"  
+
+		android:layout_alignLeft="@id/tvSample"
+		android:layout_below="@id/tbColor"
+
+		android:paddingLeft="16dp"
+		android:paddingRight="16dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+
+		android:max="255"
+		android:id="@+id/sbGrey"
+		android:progressDrawable="@drawable/progress_grey"
+
+	/>  
+	<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/sbGrey"
+        android:layout_alignTop="@id/sbGrey"
+        android:layout_alignBottom="@id/sbGrey"
+        android:gravity="center"
+
+		android:id="@+id/tvGrey"
+        android:text="288"
+        android:textColor="#fff"
+	/>
+		
+
+	<!--  red -->
+	<SeekBar
+		android:layout_width="200dp"
+		android:layout_height="wrap_content"  
+
+		android:layout_alignLeft="@id/tvSample"
+		android:layout_below="@id/tbColor"
+
+		android:paddingLeft="16dp"
+		android:paddingRight="16dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+
+
+		android:max="255"
+		android:id="@+id/sbRed"
+		android:progressDrawable="@drawable/progress_red"
+	/>  
+	<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/sbRed"
+        android:layout_alignTop="@id/sbRed"
+        android:layout_alignBottom="@id/sbRed"
+        android:gravity="center"
+
+		android:id="@+id/tvRed"
+        android:text="288"
+        android:textColor="#fff"
+	/>
+	
+	<!--  green -->
+	<SeekBar
+		android:layout_width="200dp"
+		android:layout_height="wrap_content"  
+
+		android:layout_alignLeft="@id/tvSample"
+		android:layout_below="@id/sbRed"
+
+		android:paddingLeft="16dp"
+		android:paddingRight="16dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+
+
+		android:max="255"
+		android:id="@+id/sbGreen"
+		android:progressDrawable="@drawable/progress_green"
+	/>  
+	<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/sbGreen"
+		android:layout_alignTop="@id/sbGreen"
+        android:layout_alignBottom="@id/sbGreen"
+        android:gravity="center"
+		android:id="@+id/tvGreen"
+        android:text="288"
+        android:textColor="#fff"
+	/>
+	
+	<!--  blue -->
+	<SeekBar
+		android:layout_width="200dp"
+		android:layout_height="wrap_content"  
+
+		android:layout_below="@id/sbGreen"
+		android:layout_alignLeft="@id/tvSample"
+
+		android:paddingLeft="16dp"
+		android:paddingRight="16dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+
+
+		android:max="255"
+		android:id="@+id/sbBlue"
+		android:progressDrawable="@drawable/progress_blue"
+	/>  
+	<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/sbBlue"
+		android:layout_alignTop="@id/sbBlue"
+        android:layout_alignBottom="@id/sbBlue"
+        android:gravity="center"
+		android:id="@+id/tvBlue"
+        android:text="288"
+        android:textColor="#fff"
+	/>
+</RelativeLayout>

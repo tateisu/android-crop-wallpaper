@@ -230,15 +230,23 @@ public class FolderListScreen extends Activity {
 			public void run(){
 				while(!bCancelled && !bComplete){
 	            	String path = cur.getString(idx_data);
-	            	int end = path.lastIndexOf('/');
-	            	String dirname = path.substring(0,end);
-	            	DirInfo d = dir_map.get(dirname);
-	            	if(d==null){
-	            		d = new DirInfo();
-	            		d.name = dirname;
-	            		dir_map.put(dirname,d);
+	            	if( path == null || path.length()==0 ){
+	            		log.e("missing path in cursor");
+	            	}else{
+		            	int end = path.lastIndexOf('/');
+		            	if(end==-1){
+		            		log.e("missing / in %s",path);
+		            	}else{
+			            	String dirname = path.substring(0,end);
+			            	DirInfo d = dir_map.get(dirname);
+			            	if(d==null){
+			            		d = new DirInfo();
+			            		d.name = dirname;
+			            		dir_map.put(dirname,d);
+			            	}
+				            ++d.count;
+		            	}
 	            	}
-		            ++d.count;
 
 		            if( cur.moveToNext() ) continue;
 		            

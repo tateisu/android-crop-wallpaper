@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -54,10 +55,15 @@ public final class CropWallpaper extends Activity {
 	Handler ui_handler;
 
 	// 壁紙の出力サイズ
+	float wall_image_aspect;
+	int wall_real_w;
+	int wall_real_h;
 	int wall_w;
 	int wall_h;
-	int wall_h_real;
-	float wp_aspect;
+	int wall_padding_left;
+	int wall_padding_right;
+	int wall_padding_top;
+	int wall_padding_bottom;
 
 	// 入力画像
 	Bitmap src_image;
@@ -97,6 +103,12 @@ public final class CropWallpaper extends Activity {
 	DisplayMetrics metrics;
 	boolean bOverall;
 	int statusBarHeight;
+	int navigationBarHeight;
+	int opt_padding_color = 0;
+	int opt_output_width;
+	int opt_output_height;
+	int opt_display_width;
+	int opt_display_height;
 	
 	void init_resource(){
 		if( PreferenceManager.getDefaultSharedPreferences(this).getBoolean("fullcolor",false) ){
@@ -127,6 +139,8 @@ public final class CropWallpaper extends Activity {
     	getWindowManager().getDefaultDisplay().getMetrics(metrics);
     	border_grip = metrics.density * 20;
 
+    	opt_display_width = getResources().getDisplayMetrics().widthPixels;
+    	opt_display_height = getResources().getDisplayMetrics().heightPixels;
 
     	//
     	ui_handler = new Handler();
@@ -219,21 +233,21 @@ public final class CropWallpaper extends Activity {
 						
 						// 距離の変化に応じてサイズが変化する
 						int new_w,new_h;
-						if( wp_aspect >= 1 ){
+						if( wall_image_aspect >= 1 ){
 							new_w = (int)(0.5 + prev_selection.width() * len/zoom_start_len);
-							new_h = (int)(0.5 + new_w / wp_aspect);
+							new_h = (int)(0.5 + new_w / wall_image_aspect);
 						}else{
 							new_h = (int)(0.5 + prev_selection.height() * len/zoom_start_len);
-							new_w = (int)(0.5 + new_h * wp_aspect);
+							new_w = (int)(0.5 + new_h * wall_image_aspect);
 						}
 						// クリッピング
 						if( new_w > shown_image_rect.width() ){
 							new_w = (int)shown_image_rect.width();
-							new_h = (int)(0.5 + new_w / wp_aspect);
+							new_h = (int)(0.5 + new_w / wall_image_aspect);
 						}
 						if( new_h > shown_image_rect.height() ){
 							new_h = (int)shown_image_rect.height();
-							new_w = (int)(0.5 + new_h * wp_aspect);
+							new_w = (int)(0.5 + new_h * wall_image_aspect);
 						}
 						setSelection(
 							 (prev_selection.left + prev_selection.right)/2  - new_w/2
@@ -346,12 +360,20 @@ public final class CropWallpaper extends Activity {
 	/////////////////////////////////////////////////////////////
 	// 内部処理
 	
+	static final int getPrefNumber(SharedPreferences pref,String key,int defval){
+		try{
+			return Integer.parseInt(pref.getString(key,null));
+		}catch(Throwable ex){
+			ex.printStackTrace();
+			return defval;
+		}
+	}
+	
 	// ページ構成パラメータの解釈
 	void init_page(Intent intent){
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this);
-		bAvoidStatusBar = pref.getBoolean("avoid_status_bar", false);
-		statusBarHeight = pref.getInt("status_bar_height", 0);
-
+		
+		
+		
 		bLoading = true;
 		src_image = null;
 		uri = intent.getData();
@@ -378,6 +400,7 @@ public final class CropWallpaper extends Activity {
 	}
 
 	boolean bAvoidStatusBar = true;
+	boolean bAvoidNavigationBar = true;
 
 	// 画像ロードタスク
 	ImageLoaderWorker loader_worker;
@@ -404,13 +427,60 @@ public final class CropWallpaper extends Activity {
 				}
 				log.d("loading image..");
 
+				SharedPreferences pref = getSharedPreferences(
+		        		getPackageName() + "_preferences"
+		        		,Context.MODE_PRIVATE | 4 // 4 means Context.MODE_MULTI_PROCESS, Since: API Level 11
+		        );
+
+				bAvoidStatusBar = pref.getBoolean("avoid_status_bar", false);
+				bAvoidNavigationBar = pref.getBoolean("avoid_navigation_bar", false);
+				statusBarHeight = pref.getInt("status_bar_height", 0);
+				navigationBarHeight = pref.getInt("navigation_bar_height", 0);
+				opt_padding_color = pref.getInt("padding_color",0);
+				
+				opt_output_width = getPrefNumber(pref,"output_width",0);
+				opt_output_height = getPrefNumber(pref,"output_height",0);
+				wall_padding_left = getPrefNumber(pref,"padding_left",0);
+				wall_padding_right = getPrefNumber(pref,"padding_right",0);
+				wall_padding_top = getPrefNumber(pref,"padding_top",0);
+				wall_padding_bottom = getPrefNumber(pref,"padding_bottom",0);
+				log.d("wall_padding lrtb=%d,%d,%d,%d"
+						,wall_padding_left,wall_padding_right
+						,wall_padding_top,wall_padding_bottom
+				);
+				
+				
+				
 				// 壁紙の要求サイズを調べる
-				wall_w = wpm.getDesiredMinimumWidth();
-				wall_h = wall_h_real = wpm.getDesiredMinimumHeight();
-				if( bAvoidStatusBar) wall_h -= statusBarHeight;
+				wall_real_w = wpm.getDesiredMinimumWidth();
+				wall_real_h = wpm.getDesiredMinimumHeight();
+				
+				log.d("wallpaper=%dx%d, display=%dx%d, overriding %dx%d"
+					,wall_real_w
+					,wall_real_h
+					,opt_display_width
+					,opt_display_height
+					,opt_output_width
+					,opt_output_height
+				);
+				if( wall_real_w <= 0 ) wall_real_w = opt_display_width;
+				if( wall_real_h <= 0 ) wall_real_h = opt_display_height;
+				if( opt_output_width >0 ) wall_real_w = opt_output_width;
+				if( opt_output_height >0 ) wall_real_h = opt_output_height;
+				if( wall_real_w <= 0 ) wall_real_w =1;
+				if( wall_real_h <= 0 ) wall_real_h =1;
+
+				if(bAvoidStatusBar) wall_padding_top += statusBarHeight;
+				if(bAvoidNavigationBar) wall_padding_bottom += navigationBarHeight;
+				wall_w = wall_real_w - wall_padding_left - wall_padding_right;
+				wall_h = wall_real_h - wall_padding_top  - wall_padding_bottom;
+
+				if( wall_w < 1 ) wall_w = 1;
 				if( wall_h < 1 ) wall_h = 1;
-		    	wp_aspect = wall_w/(float)wall_h;
-				log.d("statusBarHeight=%d,wall_h=%d(%d)",statusBarHeight,wall_h,wall_h_real);
+
+				wall_image_aspect = wall_w/(float)wall_h;
+
+				log.d("statusBarHeight=%d,wall_image=%dx%d",statusBarHeight,wall_w,wall_h);
 
 				// 画像サイズチェック用のオプション
 				BitmapFactory.Options check_option = new BitmapFactory.Options();
@@ -570,14 +640,14 @@ public final class CropWallpaper extends Activity {
 			// 選択範囲の幅と高さ
 			int selection_w;
 			int selection_h;
-			if( src_aspect <= wp_aspect ){
+			if( src_aspect <= wall_image_aspect ){
 				// 画像は壁紙の比率より縦長。左右ベースで合わせる
 				selection_w = (int)shown_image_rect.width();
-				selection_h = (int)(0.5 + selection_w / wp_aspect);
+				selection_h = (int)(0.5 + selection_w / wall_image_aspect);
 			}else{
 				// 画像は壁紙よりも横に長い。上下ベースで合わせる
 				selection_h = (int)shown_image_rect.height();
-				selection_w = (int)(0.5 + selection_h * wp_aspect);
+				selection_w = (int)(0.5 + selection_h * wall_image_aspect);
 			}
 			x = (frame_w - selection_w) /2;
 			y = (frame_h - selection_h) /2;
@@ -651,12 +721,12 @@ public final class CropWallpaper extends Activity {
 		public void run(){
 			boolean bDither = PreferenceManager.getDefaultSharedPreferences(CropWallpaper.this).getBoolean("dither",false);
 			final Bitmap wall_image = Bitmap.createBitmap(
-					wall_w
-					,wall_h_real
+					 wall_real_w
+					,wall_real_h
 					,(bDither ? Bitmap.Config.RGB_565 : MyApp.getBitmapConfig(src_image, Bitmap.Config.ARGB_8888) )
 			);
 			Canvas c = new Canvas(wall_image);
-			c.drawARGB(255,0,0,0);
+			c.drawColor(opt_padding_color);
 			Paint paint = new Paint();
 			paint.setFilterBitmap(true);
 			paint.setDither(bDither);
@@ -671,15 +741,12 @@ public final class CropWallpaper extends Activity {
 					w = (int)( 0.5f +  wall_h * src_image.getWidth() / (float)src_image.getHeight());
 					h = wall_h;
 				}
-				int x = (wall_w - w)/2;
-				int y = (wall_h - h)/2;
+				int x = (wall_w - w)/2 + wall_padding_left;
+				int y = (wall_h - h)/2 + wall_padding_top;
 				// 入力画像をリサイズ
 				Rect selection = new Rect(0,0,src_image.getWidth(),src_image.getHeight());
 				RectF wall_rect = new RectF(x,y,x+w,y+h);
-				if(bAvoidStatusBar){
-					wall_rect.top += statusBarHeight;
-					wall_rect.bottom += statusBarHeight;
-				}
+				
 				c.drawBitmap(src_image,selection,wall_rect,paint);
 			}else{
 				// 表示枠基準での選択範囲を、表示画像基準の選択範囲に変換
@@ -695,11 +762,12 @@ public final class CropWallpaper extends Activity {
 						,(int)(0.5 + ratio_y * (y + ivSelection.getHeight()))
 				);
 				// 入力画像をリサイズ
-				RectF wall_rect = new RectF(0,0,wall_w,wall_h);
-				if(bAvoidStatusBar){
-					wall_rect.top += statusBarHeight;
-					wall_rect.bottom += statusBarHeight;
-				}
+				RectF wall_rect = new RectF(
+					 wall_padding_left
+					,wall_padding_top
+					,wall_padding_left + wall_w
+					,wall_padding_top + wall_h
+				);
 				c.drawBitmap(src_image,selection,wall_rect,paint);
 			}
 			// 

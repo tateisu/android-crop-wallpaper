@@ -25,19 +25,21 @@
 <string name="pref_title">preferences</string>
 <string name="image_ram_limit_title">image size limit(MB)</string>
 <string name="image_ram_limit_desc">If the decoded size of an image exceeds %dMB, it will be downsampling at the time of loading.</string>
-<string name="image_ram_limit_error">please input integer between 5..100</string>
 
 <string name="thumbnail_fetch_count_title">thumbnail preload count</string>
 <string name="thumbnail_fetch_count_desc">%d thumbnails near scroll position will be loaded.</string>
-<string name="thumbnail_fetch_count_error">please input integer between 15..999</string>
 
 <string name="thumbnail_singletap_action_title">single-tap action</string>
 <string name="thumbnail_singletap_action_desc">single-tap on thumbnail raises \'%s\' .</string>
 
 <string name="avoid_status_bar_title">avoid status bar</string>
 <string name="avoid_status_bar_desc_off">images will be placed also back of status bar. matches with transparent status bar.</string>
-<string name="avoid_status_bar_desc_on">images will avoid status bar.</string>
+<string name="avoid_status_bar_desc_on">images will avoid status bar. (no effects on android 3.x)</string>
 
+<string name="avoid_navigation_bar_title">avoid navigation bar</string>
+<string name="avoid_navigation_bar_desc_off">images will be placed also back of navigation bar. matches with transparent navigation bar.</string>
+<string name="avoid_navigation_bar_desc_on">images will avoid navigation bar. (android 4.0 or later)</string>
+    
 <string name="fullcolor_title">24bit color</string>
 <string name="fullcolor_desc_off">for loading image, use RGB_565</string>
 <string name="fullcolor_desc_on">for loading image, use ARGB_8888</string>
@@ -45,5 +47,24 @@
 <string name="dither_title">dither output</string>
 <string name="dither_desc_off">color depth of output image is same as loaded image.</string>
 <string name="dither_desc_on">color depth of output image is forced to RGB_565 with dithering.</string>
+
+<string name="padding_color_title">padding color</string>
+<string name="padding_color_desc">if `overall` option is selected and output aspect is not match, fill the padding with this color</string>
+
+<string name="output_width_title">output width</string>
+<string name="output_width_desc">(%d pixel)if you want to change the size of output, please set pixel size. or set 0 to using default size.</string>
+
+<string name="output_height_title">output height</string>
+<string name="output_height_desc">(%d pixel)if you want to change the size of output, please set pixel size. or set 0 to using default size.</string>
+
+
+<string name="mode_color">RGB</string>
+
+<string name="number_range_error">please input integer between %1$d..%2$d</string>
+<string name="padding_desc">(%d pixel width) add padding to wall paper.</string>
+<string name="padding_left_title">padding left</string>
+<string name="padding_right_title">padding right</string>
+<string name="padding_top_title">padding top</string>
+<string name="padding_bottom_title">padding bottom</string>
 
 </resources>

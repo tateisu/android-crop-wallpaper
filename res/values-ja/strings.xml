@@ -27,25 +27,45 @@
 <string name="pref_title">設定</string>
 <string name="image_ram_limit_title">画像サイズの限界(MB)</string>
 <string name="image_ram_limit_desc">展開後の画像サイズが%dMBより大きい画像はロード時に縮小します。大きすぎるとメモリ不足で落ちます。</string>
-<string name="image_ram_limit_error">5..100の間の整数を入力してください</string>
 
 <string name="thumbnail_fetch_count_title">サムネイルの先読み数</string>
 <string name="thumbnail_fetch_count_desc">表示範囲に近い位置のサムネイルを%d個まで先読みします。大きすぎるとメモリ不足で落ちます。</string>
-<string name="thumbnail_fetch_count_error">15..999の間の整数を入力してください</string>
 
 <string name="thumbnail_singletap_action_title">シングルタップ時の動作</string>
 <string name="thumbnail_singletap_action_desc">サムネイルを短押ししたら「%s」を行ないます。</string>
 
 <string name="avoid_status_bar_title">ステータスバーを避ける</string>
 <string name="avoid_status_bar_desc_off">ステータスバーの後ろにも画像が配置されます。半透明ステータスバー向けの設定です。</string>
-<string name="avoid_status_bar_desc_on">画像がステータスバーに隠れないよう、ステータスバーの部分が黒くなった壁紙を作成します。</string>
+<string name="avoid_status_bar_desc_on">画像がステータスバーに隠れないよう、バーの部分が黒くなった壁紙を作成します。(Android3.xでは効果がありません)</string>
 
-<string name="fullcolor_title">24bit color</string>
-<string name="fullcolor_desc_off">for loading image, use RGB_565</string>
-<string name="fullcolor_desc_on">for loading image, use ARGB_8888</string>
+<string name="avoid_navigation_bar_title">ナビゲーションバーを避ける</string>
+<string name="avoid_navigation_bar_desc_off">ナビゲーションバーの後ろにも画像が配置されます。半透明ナビゲーションバー向けの設定です。</string>
+<string name="avoid_navigation_bar_desc_on">画像がナビゲーションバーに隠れないよう、バーの部分が黒くなった壁紙を作成します。(Android4.x以降でのみ有効です。)</string>
 
-<string name="dither_title">dither output</string>
-<string name="dither_desc_off">color depth of output image is same as loaded image.</string>
-<string name="dither_desc_on">color depth of output image is forced to RGB_565 with dithering.</string>
+<string name="fullcolor_title">24bitカラー</string>
+<string name="fullcolor_desc_off">RGB_565の色深度で画像をロードします。</string>
+<string name="fullcolor_desc_on">ARGB_8888の色深度で画像をロードします。</string>
 
+<string name="dither_title">ディザー出力</string>
+<string name="dither_desc_off">出力画像の色深度はロードした画像と同じです。</string>
+<string name="dither_desc_on">出力画像の色深度をRGB_565にして、かわりにディザリングフィルタを有効にします。古い端末では描画速度や消費メモリが改善されることがあります。</string>
+
+<string name="padding_color_title">余白の色</string>
+<string name="padding_color_desc">「全体」オプションや下の余白設定を使った際、壁紙の周辺部に使われる色を指定できます。</string>
+
+<string name="output_width_title">出力サイズ：横幅</string>
+<string name="output_width_desc">(%dピクセル)壁紙画像の横幅を指定します。0を指定すると自動的に壁紙のサイズを決定します</string>
+
+<string name="output_height_title">出力サイズ：縦幅</string>
+<string name="output_height_desc">(%dピクセル)壁紙画像の縦幅を指定します。0を指定すると自動的に壁紙のサイズを決定します</string>
+
+
+<string name="mode_color">RGB</string>
+
+<string name="number_range_error">%1$d..%2$dの間の整数を指定してください</string>
+<string name="padding_desc">(%d pixel幅)壁紙の周辺に余白を追加します。</string>
+<string name="padding_left_title">余白：左端</string>
+<string name="padding_right_title">余白：右端</string>
+<string name="padding_top_title">余白：上端</string>
+<string name="padding_bottom_title">余白：下端</string>
 </resources>

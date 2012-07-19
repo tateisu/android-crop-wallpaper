@@ -277,7 +277,7 @@ public class ImageListScreen extends Activity {
 		Uri item_uri = ContentUris.withAppendedId(base_uri, info.id);
 		intent.putExtra(Intent.EXTRA_STREAM, item_uri);
 		// contentsからmime type を取れるならdata,type もintentに設定する
-		Cursor cur = managedQuery(item_uri,null, null, null, null);
+		Cursor cur = getContentResolver().query(item_uri, null, null, null, null);
 		if( cur.moveToFirst() ){
 			int col_mimetype = cur.getColumnIndex( MediaStore.Images.ImageColumns.MIME_TYPE);
 			intent.setDataAndType(item_uri,cur.getString(col_mimetype));
@@ -388,7 +388,8 @@ public class ImageListScreen extends Activity {
 					if( dirname != null ){
 		        		String path = cur.getString(idx_data);
 	        			int pos = path.lastIndexOf('/');
-		        		if( bDirectoryFilter && !dirname.equals( path.substring(0,pos)) ){
+
+	        			if( bDirectoryFilter && pos!=-1 && !dirname.equals( path.substring(0,pos)) ){
 		        			// not in dir
 		        		}else{
 			        		ImageInfo info = new ImageInfo();
@@ -410,7 +411,8 @@ public class ImageListScreen extends Activity {
 					}else{
 						long id = cur.getLong(idx_id);
 						Uri item_uri = ContentUris.withAppendedId(base_uri,id);
-						Cursor cur2 = managedQuery(item_uri,null, null, null, null);
+
+						Cursor cur2 = getContentResolver().query(item_uri,null, null, null, null);
 						try{
 							if(cur2.moveToFirst() ){
 					    		int idx_data = cur2.getColumnIndex(MediaStore.Images.ImageColumns.DATA);

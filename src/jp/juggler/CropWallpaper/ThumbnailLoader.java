@@ -139,18 +139,26 @@ public class ThumbnailLoader {
 					ArrayList<Integer> clear_list = new ArrayList<Integer>();
 					for(Integer idx : bitmap_exists ){
 						int i = idx.intValue();
+
 						// 0 はなぜか何度も呼ばれるので破棄しない
-						if(i==0) continue;
+						if(i==0 ) continue;
+						
 						// 近くにあるデータは破棄しない
 						if( i >= last_show_index - load_range && i <= last_show_index + load_range) continue;
+
+						// リスト範囲外のインデクスは処理できない  
+						if( i >= adapter.getCount() ) continue;
+						
 						// 表示中か、drawableが設定されていないなら処理しない
 						ImageInfo info = adapter.getItem(i);
 						if( info.view != null ||  info.drawable == null ) continue;
+
 						// データを破棄する
 						info.drawable = null;
-						//
+							
 						clear_list.add(idx);
 					}
+
 					for(Integer idx : clear_list ){
 						bitmap_exists.remove(idx);
 					}
