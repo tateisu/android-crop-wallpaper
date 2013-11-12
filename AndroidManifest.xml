@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="jp.juggler.CropWallpaper"
-      android:versionCode="32"
-      android:versionName="1.32">
+      android:versionCode="34"
+      android:versionName="1.34">
    
     <uses-sdk
     	android:minSdkVersion="7" 
@@ -18,6 +18,8 @@
 	
 	<uses-permission android:name="android.permission.SET_WALLPAPER"/>
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.WRITE_SETTINGS"/>
 
     <application
 		android:icon="@drawable/icon" 
